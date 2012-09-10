@@ -6,6 +6,13 @@
 //  Copyright 2011 Tom Butterworth. All rights reserved.
 //
 
+#ifndef vpu_h
+#define vpu_h
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /*
  These match the constants defined by GL_EXT_texture_compression_s3tc
  */
@@ -66,3 +73,9 @@ unsigned int VPUDecode(const void *inputBuffer, unsigned long inputBufferBytes,
  On return sets outputBufferTextureFormat to a VPUTextureFormat constant describing the texture format of the frame.
  */
 unsigned int VPUGetFrameTextureFormat(const void *inputBuffer, unsigned long inputBufferBytes, unsigned int *outputBufferTextureFormat);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif
