@@ -404,11 +404,12 @@ unsigned int VPUDecode(const void *inputBuffer, unsigned long inputBufferBytes,
         
         z_result = inflate(&z_stream, Z_FINISH);
         
+        if (z_result == Z_STREAM_END) bytesUsed = z_stream.total_out;
+        
         inflateEnd(&z_stream);
         
-        if (z_result == Z_STREAM_END) bytesUsed = z_stream.total_out;
-        else if (z_result == Z_BUF_ERROR) return VPUResult_Buffer_Too_Small;
-        else return VPUResult_Internal_Error;
+        if (z_result == Z_BUF_ERROR) return VPUResult_Buffer_Too_Small;
+        else if (z_result != Z_STREAM_END) return VPUResult_Internal_Error;
     }
     else if (compressor == kVPUCompressorNone)
     {
