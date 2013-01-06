@@ -31,6 +31,7 @@ enum VPUTextureFormat {
  (CPU-time versus disk-space tradeoff) so these will go
  */
 enum VPUCompressor {
+    VPUCompressorNone,
     VPUCompressorSnappy,
     VPUCompressorLZF,
     VPUCompressorZLIB

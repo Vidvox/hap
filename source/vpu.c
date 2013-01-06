@@ -189,7 +189,8 @@ unsigned int VPUEncode(const void *inputBuffer, unsigned long inputBufferBytes, 
             && textureFormat != VPUTextureFormat_RGBA_DXT5
             && textureFormat != VPUTextureFormat_YCoCg_DXT5
             )
-        || (compressor != VPUCompressorSnappy
+        || (compressor != VPUCompressorNone
+            && compressor != VPUCompressorSnappy
             && compressor != VPUCompressorLZF
             && compressor != VPUCompressorZLIB
             )
@@ -233,7 +234,7 @@ unsigned int VPUEncode(const void *inputBuffer, unsigned long inputBufferBytes, 
         }
         storedCompressor = kVPUCompressorLZF;
     }
-    else
+    else if (compressor == VPUCompressorZLIB)
     {
         int z_result = Z_OK;
         
@@ -271,6 +272,12 @@ unsigned int VPUEncode(const void *inputBuffer, unsigned long inputBufferBytes, 
         }
         
         storedCompressor = kVPUCompressorZLIB;
+    }
+    else
+    {
+        // VPUCompressorNone
+        // Setting storedLength to 0 forces the frame to be used uncompressed
+        storedLength = 0;
     }
     
     /*
