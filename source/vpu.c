@@ -254,8 +254,6 @@ unsigned int VPUEncode(const void *inputBuffer, unsigned long inputBufferBytes, 
         
         z_result = deflate(&z_stream, Z_FINISH);
         
-        deflateEnd(&z_stream);
-        
         if (z_result == Z_STREAM_END)
         {
             // Compression succeeded
@@ -266,7 +264,10 @@ unsigned int VPUEncode(const void *inputBuffer, unsigned long inputBufferBytes, 
             // We get Z_OK if the output buffer was too small
             storedLength = 0;
         }
-        else
+        
+        deflateEnd(&z_stream);
+        
+        if (z_result != Z_OK && z_result != Z_STREAM_END)
         {
             return VPUResult_Internal_Error;
         }
