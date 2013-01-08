@@ -1,12 +1,12 @@
 //
-//  vpu.c
+//  hap.c
 //  
 //
 //  Created by Tom on 20/04/2011.
 //  Copyright 2011 Tom Butterworth. All rights reserved.
 //
 
-#include "vpu.h"
+#include "hap.h"
 #include <stdlib.h>
 #include <stdint.h>
 #include <errno.h> // For lzf
@@ -16,23 +16,23 @@
 #include "lzf.h"
 
 /*
- VPU Constants
+ Hap Constants
  First four bits represent the compressor
  Second four bits represent the format
  */
-#define kVPUCompressorNone 0xA
-#define kVPUCompressorSnappy 0xB
-#define kVPUCompressorLZF 0xC
-#define kVPUCompressorZLIB 0xD
+#define kHapCompressorNone 0xA
+#define kHapCompressorSnappy 0xB
+#define kHapCompressorLZF 0xC
+#define kHapCompressorZLIB 0xD
 
-#define kVPUFormatRGBDXT1 0xB
-#define kVPUFormatRGBADXT1 0xC
-#define kVPUFormatRGBADXT3 0xD
-#define kVPUFormatRGBADXT5 0xE
-#define kVPUFormatYCoCgDXT5 0xF
+#define kHapFormatRGBDXT1 0xB
+#define kHapFormatRGBADXT1 0xC
+#define kHapFormatRGBADXT3 0xD
+#define kHapFormatRGBADXT5 0xE
+#define kHapFormatYCoCgDXT5 0xF
 
 /*
- Packed byte values for VPU
+ Packed byte values for Hap
  
  Format         Compressor      Byte Code
  ----------------------------------------
@@ -63,80 +63,80 @@
 // to better differentiate them from the enums used for the API
 
 // These read and write little-endian values on big or little-endian architectures
-static unsigned int vpu_read_3_byte_uint(const void *buffer)
+static unsigned int hap_read_3_byte_uint(const void *buffer)
 {
     return (*(uint8_t *)buffer) + ((*(uint8_t *)(buffer + 1)) << 8) + ((*(uint8_t *)(buffer + 2)) << 16);
 }
 
-static void vpu_write_3_byte_uint(void *buffer, unsigned int value)
+static void hap_write_3_byte_uint(void *buffer, unsigned int value)
 {
     *(uint8_t *)buffer = value & 0xFF;
     *(uint8_t *)(buffer + 1) = (value >> 8) & 0xFF;
     *(uint8_t *)(buffer + 2) = (value >> 16) & 0xFF;
 }
 
-static unsigned int vpu_read_top_4_bits(const void *buffer)
+static unsigned int hap_read_top_4_bits(const void *buffer)
 {
     return ((*(unsigned char *)buffer) & 0xF0) >> 4;
 }
 
-static unsigned int vpu_read_bottom_4_bits(const void *buffer)
+static unsigned int hap_read_bottom_4_bits(const void *buffer)
 {
     return (*(unsigned char *)buffer) & 0x0F;
 }
 
-static void vpu_write_4_bit_values(const void *buffer, unsigned int top_bits, unsigned int bottom_bits)
+static void hap_write_4_bit_values(const void *buffer, unsigned int top_bits, unsigned int bottom_bits)
 {
     *(unsigned char *)buffer = (top_bits << 4) | (bottom_bits & 0x0F);
 }
 
 
-// Sets output_texture_format and output_compressor to VPUFormat and VPUCompressor constants
+// Sets output_texture_format and output_compressor to HapFormat and HapCompressor constants
 // buffer must be at least 4 bytes long, check before calling
-static void vpu_read_frame_header(const void *buffer, size_t *out_compressed_length, unsigned int *out_texture_format, unsigned int *out_compressor)
+static void hap_read_frame_header(const void *buffer, size_t *out_compressed_length, unsigned int *out_texture_format, unsigned int *out_compressor)
 {
     /*
      The first three bytes are the length of the compressed frame (not including the four byte header)
      */
-    *out_compressed_length = vpu_read_3_byte_uint(buffer);
+    *out_compressed_length = hap_read_3_byte_uint(buffer);
     
     /*
      The fourth byte stores the constant to describe texture format and compressor
-     VPU compressor/format constants can be unpacked by reading the top and bottom four bits.
+     Hap compressor/format constants can be unpacked by reading the top and bottom four bits.
      */
         
-    *out_compressor = vpu_read_top_4_bits(buffer + 3U);
-    *out_texture_format = vpu_read_bottom_4_bits(buffer + 3U);
+    *out_compressor = hap_read_top_4_bits(buffer + 3U);
+    *out_texture_format = hap_read_bottom_4_bits(buffer + 3U);
 }
 
-static void vpu_write_frame_header(void *buffer, size_t compressed_length, unsigned int texture_format, unsigned int compressor)
+static void hap_write_frame_header(void *buffer, size_t compressed_length, unsigned int texture_format, unsigned int compressor)
 {
     /*
      The first three bytes are the length of the compressed frame (not including the four byte header)
      */
-    vpu_write_3_byte_uint(buffer, (unsigned int)compressed_length);
+    hap_write_3_byte_uint(buffer, (unsigned int)compressed_length);
     
     /*
      The fourth byte stores the constant to describe texture format and compressor
      */
-    vpu_write_4_bit_values(buffer + 3, compressor, texture_format);
+    hap_write_4_bit_values(buffer + 3, compressor, texture_format);
 }
 
 // Returns an API texture format constant or 0 if not recognised
-static unsigned int vpu_texture_format_constant_for_format_identifier(unsigned int identifier)
+static unsigned int hap_texture_format_constant_for_format_identifier(unsigned int identifier)
 {
     switch (identifier)
     {
-        case kVPUFormatRGBDXT1:
-            return VPUTextureFormat_RGB_DXT1;
-        case kVPUFormatRGBADXT1:
-            return VPUTextureFormat_RGBA_DXT1;
-        case kVPUFormatRGBADXT3:
-            return VPUTextureFormat_RGBA_DXT3;
-        case kVPUFormatRGBADXT5:
-            return VPUTextureFormat_RGBA_DXT5;
-        case kVPUFormatYCoCgDXT5:
-            return VPUTextureFormat_YCoCg_DXT5;
+        case kHapFormatRGBDXT1:
+            return HapTextureFormat_RGB_DXT1;
+        case kHapFormatRGBADXT1:
+            return HapTextureFormat_RGBA_DXT1;
+        case kHapFormatRGBADXT3:
+            return HapTextureFormat_RGBA_DXT3;
+        case kHapFormatRGBADXT5:
+            return HapTextureFormat_RGBA_DXT5;
+        case kHapFormatYCoCgDXT5:
+            return HapTextureFormat_YCoCg_DXT5;
         default:
             return 0;
             
@@ -144,26 +144,26 @@ static unsigned int vpu_texture_format_constant_for_format_identifier(unsigned i
 }
 
 // Returns a frame identifier or 0 if not recognised
-static unsigned int vpu_texture_format_identifier_for_format_constant(unsigned int constant)
+static unsigned int hap_texture_format_identifier_for_format_constant(unsigned int constant)
 {
     switch (constant)
     {
-        case VPUTextureFormat_RGB_DXT1:
-            return kVPUFormatRGBDXT1;
-        case VPUTextureFormat_RGBA_DXT1:
-            return kVPUFormatRGBADXT1;
-        case VPUTextureFormat_RGBA_DXT3:
-            return kVPUFormatRGBADXT3;
-        case VPUTextureFormat_RGBA_DXT5:
-            return kVPUFormatRGBADXT5;
-        case VPUTextureFormat_YCoCg_DXT5:
-            return kVPUFormatYCoCgDXT5;
+        case HapTextureFormat_RGB_DXT1:
+            return kHapFormatRGBDXT1;
+        case HapTextureFormat_RGBA_DXT1:
+            return kHapFormatRGBADXT1;
+        case HapTextureFormat_RGBA_DXT3:
+            return kHapFormatRGBADXT3;
+        case HapTextureFormat_RGBA_DXT5:
+            return kHapFormatRGBADXT5;
+        case HapTextureFormat_YCoCg_DXT5:
+            return kHapFormatYCoCgDXT5;
         default:
             return 0;
     }
 }
 
-unsigned long VPUMaxEncodedLength(unsigned long inputBytes)
+unsigned long HapMaxEncodedLength(unsigned long inputBytes)
 {
     /*
      Actually our max encoded length is inputBytes + 4U but snappy may produce longer output
@@ -174,7 +174,7 @@ unsigned long VPUMaxEncodedLength(unsigned long inputBytes)
     return compressedLength + 4U;
 }
 
-unsigned int VPUEncode(const void *inputBuffer, unsigned long inputBufferBytes, unsigned int textureFormat,
+unsigned int HapEncode(const void *inputBuffer, unsigned long inputBufferBytes, unsigned int textureFormat,
                        unsigned int compressor, void *outputBuffer, unsigned long outputBufferBytes,
                        unsigned long *outputBufferBytesUsed)
 {
@@ -183,23 +183,23 @@ unsigned int VPUEncode(const void *inputBuffer, unsigned long inputBufferBytes, 
      */
     if (inputBuffer == NULL
         || inputBufferBytes == 0
-        || (textureFormat != VPUTextureFormat_RGB_DXT1
-            && textureFormat != VPUTextureFormat_RGBA_DXT1
-            && textureFormat != VPUTextureFormat_RGBA_DXT3
-            && textureFormat != VPUTextureFormat_RGBA_DXT5
-            && textureFormat != VPUTextureFormat_YCoCg_DXT5
+        || (textureFormat != HapTextureFormat_RGB_DXT1
+            && textureFormat != HapTextureFormat_RGBA_DXT1
+            && textureFormat != HapTextureFormat_RGBA_DXT3
+            && textureFormat != HapTextureFormat_RGBA_DXT5
+            && textureFormat != HapTextureFormat_YCoCg_DXT5
             )
-        || (compressor != VPUCompressorNone
-            && compressor != VPUCompressorSnappy
-            && compressor != VPUCompressorLZF
-            && compressor != VPUCompressorZLIB
+        || (compressor != HapCompressorNone
+            && compressor != HapCompressorSnappy
+            && compressor != HapCompressorLZF
+            && compressor != HapCompressorZLIB
             )
         )
     {
-        return VPUResult_Bad_Arguments;
+        return HapResult_Bad_Arguments;
     }
     
-    size_t maxCompressedLength = compressor == VPUCompressorSnappy ? snappy_max_compressed_length(inputBufferBytes) : inputBufferBytes;
+    size_t maxCompressedLength = compressor == HapCompressorSnappy ? snappy_max_compressed_length(inputBufferBytes) : inputBufferBytes;
     if (maxCompressedLength < inputBufferBytes)
     {
         // Sanity check in case a future Snappy promises to always compress
@@ -209,32 +209,32 @@ unsigned int VPUEncode(const void *inputBuffer, unsigned long inputBufferBytes, 
     if (outputBufferBytes < maxOutputBufferLength
         || outputBuffer == NULL)
     {
-        return VPUResult_Buffer_Too_Small;
+        return HapResult_Buffer_Too_Small;
     }
     void *compressedStart = outputBuffer + 4U;
     size_t storedLength;
     unsigned int storedCompressor;
-    if (compressor == VPUCompressorSnappy)
+    if (compressor == HapCompressorSnappy)
     {
         storedLength = outputBufferBytes;
         snappy_status result = snappy_compress(inputBuffer, inputBufferBytes, compressedStart, &storedLength);
         if (result != SNAPPY_OK)
         {
-            return VPUResult_Internal_Error;
+            return HapResult_Internal_Error;
         }
-        storedCompressor = kVPUCompressorSnappy;
+        storedCompressor = kHapCompressorSnappy;
     }
-    else if (compressor == VPUCompressorLZF)
+    else if (compressor == HapCompressorLZF)
     {
         // TODO: we should probably just take unsigned int for size arguments
         storedLength = lzf_compress(inputBuffer, (unsigned int)inputBufferBytes, compressedStart, (unsigned int)outputBufferBytes - 4U);
         if (storedLength == 0 && errno != E2BIG)
         {
-            return VPUResult_Internal_Error;
+            return HapResult_Internal_Error;
         }
-        storedCompressor = kVPUCompressorLZF;
+        storedCompressor = kHapCompressorLZF;
     }
-    else if (compressor == VPUCompressorZLIB)
+    else if (compressor == HapCompressorZLIB)
     {
         int z_result = Z_OK;
         
@@ -245,7 +245,7 @@ unsigned int VPUEncode(const void *inputBuffer, unsigned long inputBufferBytes, 
         z_stream.opaque = Z_NULL;
         
         z_result = deflateInit(&z_stream, Z_DEFAULT_COMPRESSION);
-        if (z_result != Z_OK) return VPUResult_Internal_Error;
+        if (z_result != Z_OK) return HapResult_Internal_Error;
         
         z_stream.avail_in = inputBufferBytes;
         z_stream.next_in = (Bytef *)inputBuffer;
@@ -269,14 +269,14 @@ unsigned int VPUEncode(const void *inputBuffer, unsigned long inputBufferBytes, 
         
         if (z_result != Z_OK && z_result != Z_STREAM_END)
         {
-            return VPUResult_Internal_Error;
+            return HapResult_Internal_Error;
         }
         
-        storedCompressor = kVPUCompressorZLIB;
+        storedCompressor = kHapCompressorZLIB;
     }
     else
     {
-        // VPUCompressorNone
+        // HapCompressorNone
         // Setting storedLength to 0 forces the frame to be used uncompressed
         storedLength = 0;
     }
@@ -289,22 +289,22 @@ unsigned int VPUEncode(const void *inputBuffer, unsigned long inputBufferBytes, 
     {
         memcpy(compressedStart, inputBuffer, inputBufferBytes);
         storedLength = inputBufferBytes;
-        storedCompressor = kVPUCompressorNone;
+        storedCompressor = kHapCompressorNone;
     }
     
-    unsigned int storedFormat = vpu_texture_format_identifier_for_format_constant(textureFormat);
+    unsigned int storedFormat = hap_texture_format_identifier_for_format_constant(textureFormat);
     
-    vpu_write_frame_header(outputBuffer, storedLength, storedFormat, storedCompressor);
+    hap_write_frame_header(outputBuffer, storedLength, storedFormat, storedCompressor);
     
     if (outputBufferBytesUsed != NULL)
     {
         *outputBufferBytesUsed = storedLength + 4U;
     }
     
-    return VPUResult_No_Error;
+    return HapResult_No_Error;
 }
 
-unsigned int VPUDecode(const void *inputBuffer, unsigned long inputBufferBytes,
+unsigned int HapDecode(const void *inputBuffer, unsigned long inputBufferBytes,
                        void *outputBuffer, unsigned long outputBufferBytes,
                        unsigned long *outputBufferBytesUsed,
                        unsigned int *outputBufferTextureFormat)
@@ -317,26 +317,26 @@ unsigned int VPUDecode(const void *inputBuffer, unsigned long inputBufferBytes,
         || outputBufferTextureFormat == NULL
         )
     {
-        return VPUResult_Bad_Arguments;
+        return HapResult_Bad_Arguments;
     }
     
     size_t storedLength;
     unsigned int textureFormat;
     unsigned int compressor;
-    vpu_read_frame_header(inputBuffer, &storedLength, &textureFormat, &compressor);
+    hap_read_frame_header(inputBuffer, &storedLength, &textureFormat, &compressor);
     
     if (storedLength + 4U > inputBufferBytes)
     {
-        return VPUResult_Bad_Frame;
+        return HapResult_Bad_Frame;
     }
     
     /*
      Pass the texture format out
      */
-    *outputBufferTextureFormat = vpu_texture_format_constant_for_format_identifier(textureFormat);
+    *outputBufferTextureFormat = hap_texture_format_constant_for_format_identifier(textureFormat);
     if (*outputBufferTextureFormat == 0)
     {
-        return VPUResult_Bad_Frame;
+        return HapResult_Bad_Frame;
     }
     
     /*
@@ -344,25 +344,25 @@ unsigned int VPUDecode(const void *inputBuffer, unsigned long inputBufferBytes,
      */
     const void *storedStart = inputBuffer + 4U;
     unsigned long bytesUsed = 0;
-    if (compressor == kVPUCompressorSnappy)
+    if (compressor == kHapCompressorSnappy)
     {
         snappy_status result = snappy_uncompressed_length(storedStart, storedLength, &bytesUsed);
         if (result != SNAPPY_OK)
         {
-            return VPUResult_Internal_Error;
+            return HapResult_Internal_Error;
         }
         if (bytesUsed > outputBufferBytes
             || outputBuffer == NULL)
         {
-            return VPUResult_Buffer_Too_Small;
+            return HapResult_Buffer_Too_Small;
         }
         result = snappy_uncompress(storedStart, storedLength, outputBuffer, &bytesUsed);
         if (result != SNAPPY_OK)
         {
-            return VPUResult_Internal_Error;
+            return HapResult_Internal_Error;
         }
     }
-    else if (compressor == kVPUCompressorLZF)
+    else if (compressor == kHapCompressorLZF)
     {
         // TODO: we should probably just take unsigned int for size arguments
         unsigned int decompressedLength = lzf_decompress(storedStart, (unsigned int)storedLength, outputBuffer, (unsigned int)outputBufferBytes);
@@ -370,11 +370,11 @@ unsigned int VPUDecode(const void *inputBuffer, unsigned long inputBufferBytes,
         {
             if (errno == E2BIG)
             {
-                return VPUResult_Buffer_Too_Small;
+                return HapResult_Buffer_Too_Small;
             }
             else
             {
-                return VPUResult_Internal_Error;
+                return HapResult_Internal_Error;
             }
         }
         else
@@ -382,7 +382,7 @@ unsigned int VPUDecode(const void *inputBuffer, unsigned long inputBufferBytes,
             bytesUsed = decompressedLength;
         }
     }
-    else if (compressor == kVPUCompressorZLIB)
+    else if (compressor == kHapCompressorZLIB)
     {
         int z_result = Z_OK;
         
@@ -395,7 +395,7 @@ unsigned int VPUDecode(const void *inputBuffer, unsigned long inputBufferBytes,
         z_stream.next_in = NULL;
         
         z_result = inflateInit(&z_stream);
-        if (z_result != Z_OK) return VPUResult_Internal_Error;
+        if (z_result != Z_OK) return HapResult_Internal_Error;
         
         z_stream.avail_in = storedLength;
         z_stream.next_in = (Bytef *)storedStart;
@@ -408,22 +408,22 @@ unsigned int VPUDecode(const void *inputBuffer, unsigned long inputBufferBytes,
         
         inflateEnd(&z_stream);
         
-        if (z_result == Z_BUF_ERROR) return VPUResult_Buffer_Too_Small;
-        else if (z_result != Z_STREAM_END) return VPUResult_Internal_Error;
+        if (z_result == Z_BUF_ERROR) return HapResult_Buffer_Too_Small;
+        else if (z_result != Z_STREAM_END) return HapResult_Internal_Error;
     }
-    else if (compressor == kVPUCompressorNone)
+    else if (compressor == kHapCompressorNone)
     {
         bytesUsed = storedLength;
         if (storedLength > outputBufferBytes
             || outputBuffer == NULL)
         {
-            return VPUResult_Buffer_Too_Small;
+            return HapResult_Buffer_Too_Small;
         }
         memcpy(outputBuffer, storedStart, storedLength);
     }
     else
     {
-        return VPUResult_Bad_Frame;
+        return HapResult_Bad_Frame;
     }
     
     /*
@@ -434,10 +434,10 @@ unsigned int VPUDecode(const void *inputBuffer, unsigned long inputBufferBytes,
         *outputBufferBytesUsed = bytesUsed;
     }
     
-    return VPUResult_No_Error;
+    return HapResult_No_Error;
 }
 
-unsigned int VPUGetFrameTextureFormat(const void *inputBuffer, unsigned long inputBufferBytes, unsigned int *outputBufferTextureFormat)
+unsigned int HapGetFrameTextureFormat(const void *inputBuffer, unsigned long inputBufferBytes, unsigned int *outputBufferTextureFormat)
 {
     /*
      Check arguments
@@ -447,7 +447,7 @@ unsigned int VPUGetFrameTextureFormat(const void *inputBuffer, unsigned long inp
         || outputBufferTextureFormat == NULL
         )
     {
-        return VPUResult_Bad_Arguments;
+        return HapResult_Bad_Arguments;
     }
     /*
     Read the frame header
@@ -455,17 +455,17 @@ unsigned int VPUGetFrameTextureFormat(const void *inputBuffer, unsigned long inp
     size_t compressedLength;
     unsigned int textureFormat;
     unsigned int compressor;
-    vpu_read_frame_header(inputBuffer, &compressedLength, &textureFormat, &compressor);
+    hap_read_frame_header(inputBuffer, &compressedLength, &textureFormat, &compressor);
     /*
      Pass the API enum value to match the constant out
      */
-    *outputBufferTextureFormat = vpu_texture_format_constant_for_format_identifier(textureFormat);
+    *outputBufferTextureFormat = hap_texture_format_constant_for_format_identifier(textureFormat);
     /*
      Check a valid format was present
      */
     if (*outputBufferTextureFormat == 0)
     {
-        return VPUResult_Bad_Frame;
+        return HapResult_Bad_Frame;
     }
-    return VPUResult_No_Error;
+    return HapResult_No_Error;
 }
