@@ -25,16 +25,9 @@ enum HapTextureFormat {
     HapTextureFormat_YCoCg_DXT5 = 0x01
 };
 
-/*
- TODO: 
- We'll probably just pick a compressor and stick with it based on performance
- (CPU-time versus disk-space tradeoff) so these will go
- */
 enum HapCompressor {
     HapCompressorNone,
-    HapCompressorSnappy,
-    HapCompressorLZF,
-    HapCompressorZLIB
+    HapCompressorSnappy
 };
 
 enum HapResult {

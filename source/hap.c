@@ -9,11 +9,8 @@
 #include "hap.h"
 #include <stdlib.h>
 #include <stdint.h>
-#include <errno.h> // For lzf
 #include <string.h> // For memcpy for uncompressed frames
-#include <zlib.h>
 #include "snappy-c.h"
-#include "lzf.h"
 
 /*
  Hap Constants
@@ -22,8 +19,6 @@
  */
 #define kHapCompressorNone 0xA
 #define kHapCompressorSnappy 0xB
-#define kHapCompressorLZF 0xC
-#define kHapCompressorZLIB 0xD
 
 #define kHapFormatRGBDXT1 0xB
 #define kHapFormatRGBADXT1 0xC
@@ -38,24 +33,14 @@
  ----------------------------------------
  RGB_DXT1       None            0xAB
  RGB_DXT1       Snappy          0xBB
- RGB_DXT1       LZF             0xCB
- RGB_DXT1       ZLIB            0xDB
  RGBA_DXT1      None            0xAC
  RGBA_DXT1      Snappy          0xBC
- RGBA_DXT1      LZF             0xCC
- RGBA_DXT1      ZLIB            0xDC
  RGBA_DXT3      None            0xAD
  RGBA_DXT3      Snappy          0xBD
- RGBA_DXT3      LZF             0xCD
- RGBA_DXT3      ZLIB            0xDD
  RGBA_DXT5      None            0xAE
  RGBA_DXT5      Snappy          0xBE
- RGBA_DXT5      LZF             0xCE
- RGBA_DXT5      ZLIB            0xDE
  YCoCg_DXT5     None            0xAF
  YCoCg_DXT5     Snappy          0xBF
- YCoCg_DXT5     LZF             0xCF
- YCoCg_DXT5     ZLIB            0xDF
  */
 
 
@@ -191,8 +176,6 @@ unsigned int HapEncode(const void *inputBuffer, unsigned long inputBufferBytes, 
             )
         || (compressor != HapCompressorNone
             && compressor != HapCompressorSnappy
-            && compressor != HapCompressorLZF
-            && compressor != HapCompressorZLIB
             )
         )
     {
@@ -224,66 +207,15 @@ unsigned int HapEncode(const void *inputBuffer, unsigned long inputBufferBytes, 
         }
         storedCompressor = kHapCompressorSnappy;
     }
-    else if (compressor == HapCompressorLZF)
-    {
-        // TODO: we should probably just take unsigned int for size arguments
-        storedLength = lzf_compress(inputBuffer, (unsigned int)inputBufferBytes, compressedStart, (unsigned int)outputBufferBytes - 4U);
-        if (storedLength == 0 && errno != E2BIG)
-        {
-            return HapResult_Internal_Error;
-        }
-        storedCompressor = kHapCompressorLZF;
-    }
-    else if (compressor == HapCompressorZLIB)
-    {
-        int z_result = Z_OK;
-        
-        z_stream z_stream;
-        
-        z_stream.zalloc = Z_NULL;
-        z_stream.zfree = Z_NULL;
-        z_stream.opaque = Z_NULL;
-        
-        z_result = deflateInit(&z_stream, Z_DEFAULT_COMPRESSION);
-        if (z_result != Z_OK) return HapResult_Internal_Error;
-        
-        z_stream.avail_in = inputBufferBytes;
-        z_stream.next_in = (Bytef *)inputBuffer;
-        z_stream.avail_out = outputBufferBytes - 4U;
-        z_stream.next_out = compressedStart;
-        
-        z_result = deflate(&z_stream, Z_FINISH);
-        
-        if (z_result == Z_STREAM_END)
-        {
-            // Compression succeeded
-            storedLength = z_stream.total_out;
-        }
-        else if (z_result == Z_OK)
-        {
-            // We get Z_OK if the output buffer was too small
-            storedLength = 0;
-        }
-        
-        deflateEnd(&z_stream);
-        
-        if (z_result != Z_OK && z_result != Z_STREAM_END)
-        {
-            return HapResult_Internal_Error;
-        }
-        
-        storedCompressor = kHapCompressorZLIB;
-    }
     else
     {
         // HapCompressorNone
-        // Setting storedLength to 0 forces the frame to be used uncompressed
+        // Setting storedLength to 0 causes the frame to be used uncompressed
         storedLength = 0;
     }
     
     /*
      If our "compressed" frame is no smaller than our input frame then store the input uncompressed.
-     lzf_compress will have returned 0 for storedLength if output was too big for the provided buffer.
      */
     if (storedLength == 0 || storedLength >= inputBufferBytes)
     {
@@ -361,55 +293,6 @@ unsigned int HapDecode(const void *inputBuffer, unsigned long inputBufferBytes,
         {
             return HapResult_Internal_Error;
         }
-    }
-    else if (compressor == kHapCompressorLZF)
-    {
-        // TODO: we should probably just take unsigned int for size arguments
-        unsigned int decompressedLength = lzf_decompress(storedStart, (unsigned int)storedLength, outputBuffer, (unsigned int)outputBufferBytes);
-        if (decompressedLength == 0)
-        {
-            if (errno == E2BIG)
-            {
-                return HapResult_Buffer_Too_Small;
-            }
-            else
-            {
-                return HapResult_Internal_Error;
-            }
-        }
-        else
-        {
-            bytesUsed = decompressedLength;
-        }
-    }
-    else if (compressor == kHapCompressorZLIB)
-    {
-        int z_result = Z_OK;
-        
-        z_stream z_stream;
-        
-        z_stream.zalloc = Z_NULL;
-        z_stream.zfree = Z_NULL;
-        z_stream.opaque = Z_NULL;
-        z_stream.avail_in = 0;
-        z_stream.next_in = NULL;
-        
-        z_result = inflateInit(&z_stream);
-        if (z_result != Z_OK) return HapResult_Internal_Error;
-        
-        z_stream.avail_in = storedLength;
-        z_stream.next_in = (Bytef *)storedStart;
-        z_stream.avail_out = outputBufferBytes;
-        z_stream.next_out = outputBuffer;
-        
-        z_result = inflate(&z_stream, Z_FINISH);
-        
-        if (z_result == Z_STREAM_END) bytesUsed = z_stream.total_out;
-        
-        inflateEnd(&z_stream);
-        
-        if (z_result == Z_BUF_ERROR) return HapResult_Buffer_Too_Small;
-        else if (z_result != Z_STREAM_END) return HapResult_Internal_Error;
     }
     else if (compressor == kHapCompressorNone)
     {
