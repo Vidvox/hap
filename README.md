@@ -9,9 +9,13 @@ When supported natively by a host application, Hap has a number of distinct adva
 - Options for adjusting compression quality
 
 There are three different Hap codecs: <b>Hap</b>, <b>Hap Alpha</b>, and <b>Hap Q</b>.
+<br>
 • <b>Hap</b> and <b>Hap Alpha</b> include an additional compression option for adjusting the image quality level.
+<br>
 • <b>Hap Alpha</b> supports an Alpha channel.
+<br>
 • <b>Hap Q</b> has noticeably more accurate image quality (at the expense of larger file sizes).
+<br>
 
 
 To play and export movies in the Hap format on your Mac, download and install the Quicktime component:
@@ -35,8 +39,11 @@ The Hap codec is optimized to reduce CPU usage during playback of high-resolutio
 There are several implications to this design choice:
 
 • Hap is most appropriate for applications that use OpenGL-based technologies to display or manipulate frames as GL textures.  If you don't work with frames as GL textures, you may not want to support Hap.
+<br>
 • Hap movies can be quite large, which means they require a fast drive to play back- fortunately this is becoming more common, but if your users generally have slow drives or require low bitrates, Hap may not be an appropriate choice.
+<br>
 • DXT/S3TC were originally written to speed up texture loading in OpenGL applications: this is not a lossless technology, and image quality may be inferior to more mainstream, CPU-based codecs.  "Hap Q" is substantially higher-quality, but this comes at the expense of larger file sizes.
+<br>
 • DXT/S3TC produces GL_TEXTURE_2D textures, as opposed to the more generally useful GL_TEXTURE_RECTANGLE_EXT.  This may require additional support in your software.
 
 
