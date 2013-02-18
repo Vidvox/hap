@@ -29,7 +29,9 @@ There are several factors to consider before deciding to adopt Hap:
 - Hap movies can be quite large, requiring a fast drive for playback - if your users expect to be able to use slow drives or require low bitrates, Hap may not be an appropriate choice.
 - S3 Texture Compression is not a lossless technology, and image quality can be inferior to other, CPU-based, codecs. Hap Q is substantially higher-quality, but this comes at the expense of larger file sizes.
 
-The simplest way to add Hap support to your application is to use QuickTime with the Hap QuickTime component installed, making a custom request to receive S3TC frames. Discussion and sample code is available at:<br> https://github.com/bangnoise/hap-quicktime-playback-demo .
+<br>
+The simplest way to add Hap support to your application is to use QuickTime with the Hap QuickTime component installed, making a custom request to receive S3TC frames. Discussion and sample code is available at:
+<br>https://github.com/bangnoise/hap-quicktime-playback-demo
 
 
 How does Hap work?
@@ -49,6 +51,7 @@ Open-Source
 The Hap codec project is open-source, licensed under a New BSD license, meaning you can use it in your commercial or noncommercial applications completely free of charge.
 
 You can read more about the New BSD license here:
+<br>
 http://opensource.org/licenses/BSD-3-Clause
 
 We like to know about software that supports Hap, so if you are using it for a project, please get in touch.
