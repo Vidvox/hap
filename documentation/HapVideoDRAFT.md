@@ -6,30 +6,47 @@ Hap Video
 
 
 Introduction
-------------
+============
 
-Hap stores video frames encoded using S3 Texture Compression such that they meet the requirements of the OpenGL [texture_compression_s3tc][1] extension. Hap permits a second stage of compression. The only permitted second-stage compression method is [Snappy][2].
+Hap is an open video codec. It stores frames in a format that can be decoded in part by dedicated graphics hardware on modern computer systems. The aim of Hap is to enable playback of a greater number of simultaneous streams of higher resolution video than is possible using alternative codecs.
 
-A frame consists of a header and data part. The header will be four bytes in length and records the size and format of the frame data. Frame data will immediately follow the frame header.
 
+Scope
+=====
+
+This document describes the content of Hap frames. It makes no recommendation on container format or the practical details of implementing an encoder or decoder.
+
+
+External References
+===================
+
+The correct encoding and decoding of Hap frames depends on compression schemes defined outside of this document. Adherence to these schemes is required to produce conforming Hap frames.
+
+1. S3 Texture Compression: described in the [OpenGL S3TC Extension][1]
+2. Snappy Compression: described in the [Snappy Format Description][2]
+3. Scaled YCoCg DXT5 Texture Compression: described in [Real-Time YCoCg-DXT Compression][3], JMP van Waveren and Ignacio Castaño, September 2007
+
+
+Hap Frames
+==========
+
+A Hap frame is formed of a four byte header immediately followed by a frame data section.
 
 Frame Header
 ------------
 
-The first three bytes of the header are an unsigned integer stored in little-endian byte order. This is the size of the frame data in bytes.
+The header will be four bytes in length and records the size and format of the frame data. The first three bytes of the header are an unsigned integer stored in little-endian byte order. This is the size of the frame data section in bytes.
 
 The fourth byte of the header is an unsigned integer denoting the S3 and second-stage compression formats in which the data is stored. Its value and meaning will be one of the following:
 
-|Hexadecimal Byte Value |S3 Format |Second-Stage Compressor |
-|-----------------------|----------|------------------------|
-|0xAB                   |RGB DXT1  |None                    |
-|0xBB                   |RGB DXT1  |Snappy                  |
-|0xAC                   |RGBA DXT1 |None                    |
-|0xBC                   |RGBA DXT1 |Snappy                  |
-|0xAD                   |RGBA DXT3 |None                    |
-|0xBD                   |RGBA DXT3 |Snappy                  |
-|0xAE                   |RGBA DXT5 |None                    |
-|0xBE                   |RGBA DXT5 |Snappy                  |
+|Hexadecimal Byte Value |S3 Format         |Second-Stage Compressor |
+|-----------------------|------------------|------------------------|
+|0xAB                   |RGB DXT1          |None                    |
+|0xBB                   |RGB DXT1          |Snappy                  |
+|0xAE                   |RGBA DXT5         |None                    |
+|0xBE                   |RGBA DXT5         |Snappy                  |
+|0xAF                   |Scaled YCoCg DXT5 |None                    |
+|0xBF                   |Scaled YCoCg DXT5 |Snappy                  |
 
 Frame Data
 ----------
@@ -37,4 +54,5 @@ Frame Data
 The remainder of the frame is the frame data, starting immediately after the header (four bytes after the start of the frame). The data is to be treated as indicated by the header. If a second-stage compressor is indicated then the frame data is to be decompressed accordingly. The result of that decompression will be data in the indicated S3 format. If no second-stage compressor is indicated, the frame data is in the indicated S3 format.
 
 [1]: http://www.opengl.org/registry/specs/EXT/texture_compression_s3tc.txt
-[2]: http://code.google.com/p/snappy/
+[2]: http://snappy.googlecode.com/svn/trunk/format_description.txt
+[3]: http://developer.download.nvidia.com/whitepapers/2007/Real-Time-YCoCg-DXT-Compression/Real-Time%20YCoCg-DXT%20Compression.pdf
