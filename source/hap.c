@@ -44,8 +44,6 @@
 #define kHapCompressorSnappy 0xB
 
 #define kHapFormatRGBDXT1 0xB
-#define kHapFormatRGBADXT1 0xC
-#define kHapFormatRGBADXT3 0xD
 #define kHapFormatRGBADXT5 0xE
 #define kHapFormatYCoCgDXT5 0xF
 
@@ -56,10 +54,6 @@
  ----------------------------------------
  RGB_DXT1       None            0xAB
  RGB_DXT1       Snappy          0xBB
- RGBA_DXT1      None            0xAC
- RGBA_DXT1      Snappy          0xBC
- RGBA_DXT3      None            0xAD
- RGBA_DXT3      Snappy          0xBD
  RGBA_DXT5      None            0xAE
  RGBA_DXT5      Snappy          0xBE
  YCoCg_DXT5     None            0xAF
@@ -137,10 +131,6 @@ static unsigned int hap_texture_format_constant_for_format_identifier(unsigned i
     {
         case kHapFormatRGBDXT1:
             return HapTextureFormat_RGB_DXT1;
-        case kHapFormatRGBADXT1:
-            return HapTextureFormat_RGBA_DXT1;
-        case kHapFormatRGBADXT3:
-            return HapTextureFormat_RGBA_DXT3;
         case kHapFormatRGBADXT5:
             return HapTextureFormat_RGBA_DXT5;
         case kHapFormatYCoCgDXT5:
@@ -158,10 +148,6 @@ static unsigned int hap_texture_format_identifier_for_format_constant(unsigned i
     {
         case HapTextureFormat_RGB_DXT1:
             return kHapFormatRGBDXT1;
-        case HapTextureFormat_RGBA_DXT1:
-            return kHapFormatRGBADXT1;
-        case HapTextureFormat_RGBA_DXT3:
-            return kHapFormatRGBADXT3;
         case HapTextureFormat_RGBA_DXT5:
             return kHapFormatRGBADXT5;
         case HapTextureFormat_YCoCg_DXT5:
@@ -192,8 +178,6 @@ unsigned int HapEncode(const void *inputBuffer, unsigned long inputBufferBytes, 
     if (inputBuffer == NULL
         || inputBufferBytes == 0
         || (textureFormat != HapTextureFormat_RGB_DXT1
-            && textureFormat != HapTextureFormat_RGBA_DXT1
-            && textureFormat != HapTextureFormat_RGBA_DXT3
             && textureFormat != HapTextureFormat_RGBA_DXT5
             && textureFormat != HapTextureFormat_YCoCg_DXT5
             )
