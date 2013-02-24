@@ -15,7 +15,7 @@ There are three different Hap codecs: **Hap**, **Hap Alpha**, and **Hap Q**.
 - **Hap Alpha** has similar image quality to Hap, and supports an Alpha channel.
 - **Hap Q** has improved image quality, at the expense of larger file sizes.
 
-A [Hap QuickTime codec](http://github.com/bangnoise/hap-qt-codec/) allows encoding and non-accelerated playback of Hap video in any application on Mac OS X, and assists accelerated playback in applications which support it.
+A [Hap QuickTime codec](http://github.com/vidvox/hap-qt-codec/) allows encoding and non-accelerated playback of Hap video in any application on Mac OS X, and assists accelerated playback in applications which support it.
 
 Hap has some characteristics which you should consider before using it:
 
@@ -35,14 +35,14 @@ Since images encoded with S3TC are still extremely large, Hap uses an additional
 Developers: Supporting Hap In Your Applications
 ----
 
-The simplest way to add Hap support to your application is to use QuickTime with the Hap QuickTime codec installed, making a custom request to receive S3TC frames which you then process with OpenGL. Discussion and sample code is available in the [Hap QuickTime Playback Demo](https://github.com/bangnoise/hap-quicktime-playback-demo).
+The simplest way to add Hap support to your application is to use QuickTime with the Hap QuickTime codec installed, making a custom request to receive S3TC frames which you then process with OpenGL. Discussion and sample code is available in the [Hap QuickTime Playback Demo](https://github.com/vidvox/hap-quicktime-playback-demo).
 
 If you need to parse raw Hap frames yourself, source code and a specification document are available as part of this project.
 
 Open-Source
 ----
 
-The Hap codec project is open-source, licensed under a [New BSD License](https://github.com/bangnoise/hap/blob/master/LICENSE), meaning you can use it in your commercial or noncommercial applications free of charge.
+The Hap codec project is open-source, licensed under a [New BSD License](https://github.com/vidvox/hap/blob/master/LICENSE), meaning you can use it in your commercial or noncommercial applications free of charge.
 
 We like to know about software that supports Hap, so if you are using it for a project, please get in touch.
 
