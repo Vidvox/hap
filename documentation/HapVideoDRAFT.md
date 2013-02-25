@@ -2,9 +2,6 @@ Hap Video
 =========
 
 
-*DRAFT DOCUMENT: All details of the format described may change.*
-
-
 Introduction
 ============
 
