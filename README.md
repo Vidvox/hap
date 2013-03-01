@@ -22,6 +22,19 @@ Hap has some characteristics which you should consider before using it:
 - Hap files are usually large and require a fast hard drive or solid state drive for playback.
 - Image quality can be inferior to other, CPU-based, codecs. Hap Q gives substantially higher quality, but this comes at the expense of even larger file sizes.
 
+Why did we make Hap?
+---
+
+This new codec is designed with the goal of playing back back as many movies as possible on hardware with fast hard drives, particularly in situations where existing codecs reach the limits of the CPU to decode frames.
+
+In particular this addresses three recent trends we've noticed in Macs currently being used for real-time visuals:
+
+1. Upgrading to a SSD is a great way to get more use out of an older, slower machine, where the CPU is often difficult or flat out impossible to swap out.
+
+2. Many of the newer high-end Macs (which are already recommended for their better graphics cards) come standard with SSD drives now, plus the SSDs options are widely more affordable than they were just 3 or 4 years ago.
+
+3. For very high-end situations, it's usually possible to build a faster / bigger hard drive array, whereas you can't just stick more processors into a computer to play more movies at once.
+
 How does Hap work?
 ----
 
