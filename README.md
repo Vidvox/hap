@@ -1,7 +1,7 @@
 Hap
 ====
 
-Hap is a video codec that performs decompression using a computer's graphics hardware, substantially reducing the CPU usage necessary to play video - this is useful in situations where CPU power is a limiting factor, such as when working with high resolution video.
+Hap is a video codec that performs decompression using a computer's graphics hardware, substantially reducing the CPU usage necessary to play video - this is useful in situations where CPU power is a limiting factor, such as when working with multiple high resolution videos in real-time.
 
 When supported natively by a host application, Hap has a number of distinct advantages over other codecs commonly used for real-time video playback.
 
@@ -55,7 +55,7 @@ If you need to parse raw Hap frames yourself, source code and a specification do
 Open-Source
 ----
 
-The Hap codec project is open-source, licensed under a [New BSD License](https://github.com/vidvox/hap/blob/master/LICENSE), meaning you can use it in your commercial or noncommercial applications free of charge.
+The Hap codec project is open-source, licensed under a [Free BSD License](https://github.com/vidvox/hap/blob/master/LICENSE), meaning you can use it in your commercial or noncommercial applications free of charge.
 
 We like to know about software that supports Hap, so if you are using it for a project, please get in touch.
 
