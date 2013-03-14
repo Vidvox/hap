@@ -22,7 +22,7 @@ Hap has some characteristics which you should consider before using it:
 - Hap files are usually large and require a fast hard drive or solid state drive for playback.
 - Image quality can be inferior to other, CPU-based, codecs. Hap Q gives substantially higher quality, but this comes at the expense of even larger file sizes.
 
-Why did we make Hap?
+Why Did We Make Hap?
 ---
 
 This new codec is designed with the goal of playing back back as many movies as possible on hardware with fast hard drives, particularly in situations where existing codecs reach the limits of the CPU to decode frames.
@@ -35,7 +35,7 @@ In particular this addresses three recent trends we've noticed in Macs currently
 
 3. For very high-end situations, it's usually possible to build a faster / bigger hard drive array, whereas you can't just stick more processors into a computer to play more movies at once.
 
-How does Hap work?
+How Does Hap Work?
 ----
 
 Video codecs compress/decompress video data - they translate the files on your disk into pixels. Normally, your computer's processors do this work - GPU-accelerated codecs perform this task on the computer's graphics hardware. With Hap, this is done by using S3 Texture Compression to encode frames, which allows still-compressed frames to be passed directly to your computer's graphics hardware for decompression. Since the graphics hardware is designed to do this sort of task very quickly it still remains available for other image processing you may wish to apply to the decompressed frames, and the load on the CPU is minimal.
