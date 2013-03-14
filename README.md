@@ -45,6 +45,15 @@ The Hap codec comes in three different variations, each corresponding to a diffe
 
 Since images encoded with S3TC are still extremely large, Hap uses an additional lightweight lossless compression pass using [Snappy](http://code.google.com/p/snappy/) to reduce the overall data-rate to a manageable size.
 
+Applications With Native Support For Hap
+----
+
+The following applications have support for GPU-accelerated playback of Hap movies:
+
+- [VDMX](http://www.vidvox.net)
+- [CoGe](http://cogevj.hu)
+- [Millumin](http://www.millumin.com)
+
 Developers: Supporting Hap In Your Applications
 ----
 
