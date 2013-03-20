@@ -63,14 +63,14 @@
 // These read and write little-endian values on big or little-endian architectures
 static unsigned int hap_read_3_byte_uint(const void *buffer)
 {
-    return (*(uint8_t *)buffer) + ((*(uint8_t *)(buffer + 1)) << 8) + ((*(uint8_t *)(buffer + 2)) << 16);
+    return (*(uint8_t *)buffer) + ((*(((uint8_t *)buffer) + 1)) << 8) + ((*(((uint8_t *)buffer) + 2)) << 16);
 }
 
 static void hap_write_3_byte_uint(void *buffer, unsigned int value)
 {
     *(uint8_t *)buffer = value & 0xFF;
-    *(uint8_t *)(buffer + 1) = (value >> 8) & 0xFF;
-    *(uint8_t *)(buffer + 2) = (value >> 16) & 0xFF;
+    *(((uint8_t *)buffer) + 1) = (value >> 8) & 0xFF;
+    *(((uint8_t *)buffer) + 2) = (value >> 16) & 0xFF;
 }
 
 static unsigned int hap_read_top_4_bits(const void *buffer)
@@ -103,8 +103,8 @@ static void hap_read_frame_header(const void *buffer, size_t *out_compressed_len
      Hap compressor/format constants can be unpacked by reading the top and bottom four bits.
      */
         
-    *out_compressor = hap_read_top_4_bits(buffer + 3U);
-    *out_texture_format = hap_read_bottom_4_bits(buffer + 3U);
+    *out_compressor = hap_read_top_4_bits(((uint8_t *)buffer) + 3U);
+    *out_texture_format = hap_read_bottom_4_bits(((uint8_t *)buffer) + 3U);
 }
 
 static void hap_write_frame_header(void *buffer, size_t compressed_length, unsigned int texture_format, unsigned int compressor)
@@ -117,7 +117,7 @@ static void hap_write_frame_header(void *buffer, size_t compressed_length, unsig
     /*
      The fourth byte stores the constant to describe texture format and compressor
      */
-    hap_write_4_bit_values(buffer + 3, compressor, texture_format);
+    hap_write_4_bit_values(((uint8_t *)buffer) + 3, compressor, texture_format);
 }
 
 // Returns an API texture format constant or 0 if not recognised
@@ -168,6 +168,13 @@ unsigned int HapEncode(const void *inputBuffer, unsigned long inputBufferBytes, 
                        unsigned int compressor, void *outputBuffer, unsigned long outputBufferBytes,
                        unsigned long *outputBufferBytesUsed)
 {
+    size_t maxCompressedLength;
+    size_t maxOutputBufferLength;
+    void *compressedStart;
+    size_t storedLength;
+    unsigned int storedCompressor;
+    unsigned int storedFormat;
+
     /*
      Check arguments
      */
@@ -185,25 +192,25 @@ unsigned int HapEncode(const void *inputBuffer, unsigned long inputBufferBytes, 
         return HapResult_Bad_Arguments;
     }
     
-    size_t maxCompressedLength = compressor == HapCompressorSnappy ? snappy_max_compressed_length(inputBufferBytes) : inputBufferBytes;
+    maxCompressedLength = compressor == HapCompressorSnappy ? snappy_max_compressed_length(inputBufferBytes) : inputBufferBytes;
     if (maxCompressedLength < inputBufferBytes)
     {
         // Sanity check in case a future Snappy promises to always compress
         maxCompressedLength = inputBufferBytes;
     }
-    size_t maxOutputBufferLength = maxCompressedLength + 4U;
+    maxOutputBufferLength = maxCompressedLength + 4U;
     if (outputBufferBytes < maxOutputBufferLength
         || outputBuffer == NULL)
     {
         return HapResult_Buffer_Too_Small;
     }
-    void *compressedStart = outputBuffer + 4U;
-    size_t storedLength;
-    unsigned int storedCompressor;
+    compressedStart = ((uint8_t *)outputBuffer) + 4U;
+    
     if (compressor == HapCompressorSnappy)
     {
+        snappy_status result;
         storedLength = outputBufferBytes;
-        snappy_status result = snappy_compress(inputBuffer, inputBufferBytes, compressedStart, &storedLength);
+        result = snappy_compress((const char *)inputBuffer, inputBufferBytes, (char *)compressedStart, &storedLength);
         if (result != SNAPPY_OK)
         {
             return HapResult_Internal_Error;
@@ -227,7 +234,7 @@ unsigned int HapEncode(const void *inputBuffer, unsigned long inputBufferBytes, 
         storedCompressor = kHapCompressorNone;
     }
     
-    unsigned int storedFormat = hap_texture_format_identifier_for_format_constant(textureFormat);
+    storedFormat = hap_texture_format_identifier_for_format_constant(textureFormat);
     
     hap_write_frame_header(outputBuffer, storedLength, storedFormat, storedCompressor);
     
@@ -244,6 +251,12 @@ unsigned int HapDecode(const void *inputBuffer, unsigned long inputBufferBytes,
                        unsigned long *outputBufferBytesUsed,
                        unsigned int *outputBufferTextureFormat)
 {
+    size_t storedLength;
+    unsigned int textureFormat;
+    unsigned int compressor;
+    const void *storedStart;
+    size_t bytesUsed = 0;
+    
     /*
      Check arguments
      */
@@ -255,9 +268,6 @@ unsigned int HapDecode(const void *inputBuffer, unsigned long inputBufferBytes,
         return HapResult_Bad_Arguments;
     }
     
-    size_t storedLength;
-    unsigned int textureFormat;
-    unsigned int compressor;
     hap_read_frame_header(inputBuffer, &storedLength, &textureFormat, &compressor);
     
     if (storedLength + 4U > inputBufferBytes)
@@ -277,11 +287,10 @@ unsigned int HapDecode(const void *inputBuffer, unsigned long inputBufferBytes,
     /*
      After the header comes the compressed frame, so now we decompress it into the output buffer
      */
-    const void *storedStart = inputBuffer + 4U;
-    unsigned long bytesUsed = 0;
+    storedStart = ((uint8_t *)inputBuffer) + 4U;
     if (compressor == kHapCompressorSnappy)
     {
-        snappy_status result = snappy_uncompressed_length(storedStart, storedLength, &bytesUsed);
+        snappy_status result = snappy_uncompressed_length((const char *)storedStart, storedLength, &bytesUsed);
         if (result != SNAPPY_OK)
         {
             return HapResult_Internal_Error;
@@ -291,7 +300,7 @@ unsigned int HapDecode(const void *inputBuffer, unsigned long inputBufferBytes,
         {
             return HapResult_Buffer_Too_Small;
         }
-        result = snappy_uncompress(storedStart, storedLength, outputBuffer, &bytesUsed);
+        result = snappy_uncompress((const char *)storedStart, storedLength, (char *)outputBuffer, &bytesUsed);
         if (result != SNAPPY_OK)
         {
             return HapResult_Internal_Error;
@@ -325,6 +334,9 @@ unsigned int HapDecode(const void *inputBuffer, unsigned long inputBufferBytes,
 
 unsigned int HapGetFrameTextureFormat(const void *inputBuffer, unsigned long inputBufferBytes, unsigned int *outputBufferTextureFormat)
 {
+    size_t compressedLength;
+    unsigned int textureFormat;
+    unsigned int compressor;
     /*
      Check arguments
      */
@@ -338,9 +350,6 @@ unsigned int HapGetFrameTextureFormat(const void *inputBuffer, unsigned long inp
     /*
     Read the frame header
      */
-    size_t compressedLength;
-    unsigned int textureFormat;
-    unsigned int compressor;
     hap_read_frame_header(inputBuffer, &compressedLength, &textureFormat, &compressor);
     /*
      Pass the API enum value to match the constant out
