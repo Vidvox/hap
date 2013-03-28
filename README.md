@@ -1,7 +1,7 @@
 Hap
 ====
 
-Hap is a video codec that performs decompression using a computer's graphics hardware, substantially reducing the CPU usage necessary to play video - this is useful in situations where CPU power is a limiting factor, such as when working with multiple high resolution videos in real-time.
+Hap is a video codec that performs decompression using a computer's graphics hardware, substantially reducing the CPU usage necessary to play video — this is useful in situations where CPU power is a limiting factor, such as when working with multiple high resolution videos in real-time.
 
 When supported natively by a host application, Hap has a number of distinct advantages over other codecs commonly used for real-time video playback.
 
@@ -25,7 +25,7 @@ Hap has some characteristics which you should consider before using it:
 Why Did We Make Hap?
 ---
 
-This new codec is designed with the goal of playing back back as many movies as possible on hardware with fast hard drives, particularly in situations where existing codecs reach the limits of the CPU to decode frames.
+This new codec is designed with the goal of playing back as many movies as possible on hardware with fast hard drives, particularly in situations where existing codecs reach the limits of the CPU to decode frames.
 
 In particular this addresses three recent trends we've noticed in Macs currently being used for real-time visuals:
 
@@ -38,7 +38,7 @@ In particular this addresses three recent trends we've noticed in Macs currently
 How Does Hap Work?
 ----
 
-Video codecs compress/decompress video data - they translate the files on your disk into pixels. Normally, your computer's processors do this work - GPU-accelerated codecs perform this task on the computer's graphics hardware. With Hap, this is done by using S3 Texture Compression to encode frames, which allows still-compressed frames to be passed directly to your computer's graphics hardware for decompression. Since the graphics hardware is designed to do this sort of task very quickly it still remains available for other image processing you may wish to apply to the decompressed frames, and the load on the CPU is minimal.
+Video codecs compress/decompress video data — they translate the files on your disk into pixels. Normally, your computer's processors do this work — GPU-accelerated codecs perform this task on the computer's graphics hardware. With Hap, this is done by using S3 Texture Compression to encode frames, which allows still-compressed frames to be passed directly to your computer's graphics hardware for decompression. Since the graphics hardware is designed to do this sort of task very quickly it still remains available for other image processing you may wish to apply to the decompressed frames, and the load on the CPU is minimal.
 
 The Hap codec comes in three different variations, each corresponding to a different form of S3TC texture compression: 
 **Hap** (DXT1), **Hap Alpha** (DXT5) and **Hap Q** (Scaled YCoCg DXT5).
