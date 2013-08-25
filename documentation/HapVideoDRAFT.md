@@ -27,67 +27,81 @@ The correct encoding and decoding of Hap frames depends on compression schemes d
 ##Hap Frames
 
 
-A Hap frame is formed of a header of at least four bytes (but possibly more) immediately followed by a frame data section.
+A Hap frame is always formed of a header of four or eight bytes and a frame data section. Frames may also have further sections that provide extra information which may or may not be required to properly decode the frame. The presence of these extra sections and their type(s) will be indicated by the type field of the frame header.
 
 ###Frame Header
 
-All integers are stored in little-endian byte order.
+The header will be four or eight bytes in size and records the format and combined size of any decode instructions and the frame data. The size of the header is determined by the value of the first three bytes, or the last four bytes, depending on the vaues of the first three bytes.
 
-The header starts with a 'Simple Header' section, which will be either four or eight bytes in size, depending on the values in the first three bytes. The Simple Header records the format of the frame data, as well as the size of the frame data and the Extended Header, if present.
+When the first three bytes of the header each have the value zero, the header is eight bytes in size. The fifth, sixth, seventh and eighth bytes are an unsigned integer stored in little-endian byte order. This is the combined size of any sections and the frame data in bytes.
 
-When the first three bytes of the Simple Header each have the value zero, the Simple Header is eight bytes in size. The fifth, sixth, seventh and eighth bytes are an unsigned integer. This is the size of the frame and Extended Header sections, in bytes.
+When any of the first three bytes of the header have a non-zero value, the header is four bytes in size. The first three bytes are an unsigned integer stored in little-endian byte order. This is the combined size of any sections and the frame data in bytes.
 
-When any of the first three bytes of the SImple Header have a non-zero value, the Simple Header is four bytes in size. The first three bytes are an unsigned integer. This is the size of the frame data and Extended Header sections, in bytes.
-
-The fourth byte of the Simple Header is an unsigned integer denoting the S3 and second-stage compression formats in which the data is stored. Its value and meaning will be one of the following:
+The fourth byte of the header is an unsigned integer called the type field, denoting the S3 and second-stage compression formats in which the data is stored, as well as indicating the presence of decode instructions. Its value and meaning will be one of the following:
 
 |Hexadecimal Byte Value |S3 Format         |Second-Stage Compressor      |
 |-----------------------|------------------|-----------------------------|
 |0xAB                   |RGB DXT1          |None                         |
 |0xBB                   |RGB DXT1          |Snappy                       |
-|0xCB                   |RGB DXT1          |Specified by Extended Header |
+|0xCB                   |RGB DXT1          |Consult decode instructions Section |
 |0xAE                   |RGBA DXT5         |None                         |
 |0xBE                   |RGBA DXT5         |Snappy                       |
-|0xCE                   |RGBA DXT5         |Specified by Extended Header |
+|0xCE                   |RGBA DXT5         |Consult decode instructions Section |
 |0xAF                   |Scaled YCoCg DXT5 |None                         |
 |0xBF                   |Scaled YCoCg DXT5 |Snappy                       |
-|0xCF                   |Scaled YCoCg DXT5 |Specified by Extended Header |
+|0xCF                   |Scaled YCoCg DXT5 |Consult decode instructions Section |
 
+### Sections 
 
+A section starts with the Section Header, and is followed by the section data which may be other sub-sections, or the data as described for that particular section.
 
-#### Extender Header
+#### Section Header
 
-Must only be present if the Second-Stage Compressor says it is present. It will immediately follow the Simple Header.
-The data in the Extended Header is as follows:
-The first 4 bytes are an unsigned integer denoting the total size of the Extended Header, including any block(s) of extra information required. The actual frame data must start this number of bytes after the Extended Header's starting byte.
-The next 4 bytes are a bitfield of potential options that describe how the frame data is stored. An option may or may not have an extra block of data required to further describe the stored frame data. If such a block is required it will always start with a 4 byte unsigned integer denoting the size of that block. If multiple blocks are present due to multiple options, the order that these blocks appear will be determined by the order that the options are listed in the below table. At least one option must be specified. Options can potentially be mutually exclusive.
+A section header follows the same format as the Frame Header.
 
-|Hexadecimal bit Value |Option                      |
-|----------------------|----------------------------|
-|0x1                   |Data is partitioned         |
+The header will be four or eight bytes in size and records the format and combined size of the section. The size of the header is determined by the value of the first three bytes, or the last four bytes, depending on the vaues of the first three bytes.
 
-#####Data is partitioned (0x1):
+When the first three bytes of the header each have the value zero, the header is eight bytes in size. The fifth, sixth, seventh and eighth bytes are an unsigned integer stored in little-endian byte order. This is the size of the section in bytes.
 
-When this option is enabled the frame data has been split up into partitions, each of which will have it's own compression format (or possibly remain uncompressed). Each partition should be decompressed using a seperate call to it's particular decompressor. The block describing the partioning is as laid out as follows:
-The first 4 bytes are an unsigned integer denoting the total size of the block in bytes.
-The next 4 bytes are an unsigned integer denoting the number of partitions. 
-Following those first 8 bytes, there is a table with one entry for each patition. Each entry will be at least 12 bytes long, and possibly longer depending on the value of the first 4 bytes of the entry. 
-The first 4 bytes of the entry are an unsigned integer denoting the compression format of the partition. Possible values are:
+When any of the first three bytes of the header have a non-zero value, the header is four bytes in size. The first three bytes are an unsigned integer stored in little-endian byte order. This is the size of the section in bytes.
 
-| Value             | Compressor          |
+The fourth byte is a code denoting the type of that section, and will be one of the following:
+
+|Hexadecimal Byte Value | Meaning                       |
+|-----------------------|-------------------------------|
+| 0x01	                | Decode Instructions Container |
+| 0x02	                | Chunk Second-Stage Compressor Table |
+| 0x03	                | Chunk Size Table  | 
+| 0x04                  | Chunk Offset Table |
+
+#### Section Types
+
+##### Decode Instructions Container
+
+The Decode Instructions Container is the only permitted top-level section. Following the size and type fields it will contain any other required sections. The size indicates the total size of all the decode instruction sub-sections.
+
+##### Chunk Second-Stage Compressor Table
+
+The presence of this section indicates that frame data is split into chunks. Following the size and type fields comes a series of single-byte fields indicating the second-stage compressor for each chunk, with one of the following values:
+
+| Hexadecimal Byte Value | Compressor     |
 |-------------------|---------------------|
-| 0x1               | Uncompressed        |
-| 0x2               | Snappy              |
+| 0x0A               | Uncompressed        |
+| 0x0B               | Snappy              |
 
-The next 4 bytes are an unsigned integer denoting the total size of the entry. This must be at least 12, and can be larger depending on the compressor. Currently none of the compressors will use more than 12 bytes per entry. 
-The final 4 guaranteed bytes of the entry are the compressed size of the partition.
+The number of chunks can be calculated from the size of this section, that is to say, the size in bytes of this section is equal to the number of chunks. If second-stage compression is indicated, each chunk is to be passed to the second-stage decompressor independently. This section, if present, must be accompanied by a Chunk Size Table.
 
-Each partition's entry will come directly after the previous partition's entry.
+##### Chunk Size Table
 
-###Frame Data
+The presence of this section indicates that frame data is split into chunks. Following the size and type fields comes a series of four-byte fields being unsigned integers stored in little-endian byte order, and indicating the byte size of each chunk. The number of chunks is equal to the size of his section divided by four. If second-stage compression is used, each chunk should be passed to the second-stage decompressor independently. This section, if present, must be accompanied by a Chunk Second-Stage Compressor Table. The offset from the start of the frame data to the beginning of each chunk can be calcualated by summing the chunk size of all previous chunks.
 
+##### Chunk Offset Table
 
-The remainder of the frame is the frame data, starting immediately after the header(s). The data is to be treated as indicated by the header(s). If a second-stage compressor is indicated then the frame data is to be decompressed accordingly. The result of that decompression will be data in the indicated S3 format. If no second-stage compressor is indicated, the frame data is in the indicated S3 format.
+The presence of this section indicates that each chunk has a custom offset. These offsets must be used to find the location of the data for each chunk, it can not be inferred from simply the Size Table. Following the size and type fields comes a series of four-byte fields indicating the offset in bytes of each chunk from the start of the frame data. Chunks can use the same offset. Both the Chunk Size Table and the Chunk Second-Stage Compressor Table sections must be present for this section to be present.
+
+### Frame Data
+
+The remainder of the frame is the frame data, starting immediately after the frame header and optional sections. The data is to be treated as indicated by the header and sections. If a second-stage compressor is indicated then the frame data is to be decompressed accordingly. The result of that decompression will be data in the indicated S3 format. If no second-stage compressor is indicated, the frame data is in the indicated S3 format.
 
 [1]: http://www.opengl.org/registry/specs/EXT/texture_compression_s3tc.txt
 [2]: http://snappy.googlecode.com/svn/trunk/format_description.txt
