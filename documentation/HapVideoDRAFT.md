@@ -27,81 +27,82 @@ The correct encoding and decoding of Hap frames depends on compression schemes d
 ##Hap Frames
 
 
-A Hap frame is always formed of a header of four or eight bytes and a frame data section. Frames may also have further sections that provide extra information which may or may not be required to properly decode the frame. The presence of these extra sections and their type(s) will be indicated by the type field of the frame header.
+A Hap frame is stored in a sectioned layout, where each section is preceded by a header indicating that section's size and type. A section may itself contain other sections, or data to inform decoding, or frame data. Section data immediately follows the section header.
 
-###Frame Header
+Decoders encountering a section of an unknown type should attempt to continue decoding the frame if other sections provide adequate information to do so. Some sections are only permitted inside other sections, but at any given hierarchical level sections may occur in any order.
 
-The header will be four or eight bytes in size and records the format and combined size of any decode instructions and the frame data. The size of the header is determined by the value of the first three bytes, or the last four bytes, depending on the vaues of the first three bytes.
+###Section Header
 
-When the first three bytes of the header each have the value zero, the header is eight bytes in size. The fifth, sixth, seventh and eighth bytes are an unsigned integer stored in little-endian byte order. This is the combined size of any sections and the frame data in bytes.
+A section header will be four or eight bytes in size and records the type and size of the section. The recorded size of the section excludes the size of the header. The size of the header is determined by the value of the first three bytes.
 
-When any of the first three bytes of the header have a non-zero value, the header is four bytes in size. The first three bytes are an unsigned integer stored in little-endian byte order. This is the combined size of any sections and the frame data in bytes.
+When the first three bytes of the header each have the value zero, the header is eight bytes in size. The fifth, sixth, seventh and eighth bytes are an unsigned integer stored in little-endian byte order. This is the size of the section in bytes, excluding the size of the header.
 
-The fourth byte of the header is an unsigned integer called the type field, denoting the S3 and second-stage compression formats in which the data is stored, as well as indicating the presence of decode instructions. Its value and meaning will be one of the following:
+When any of the first three bytes of the header have a non-zero value, the header is four bytes in size. The first three bytes are an unsigned integer stored in little-endian byte order. This is the size of the section in bytes, excluding the size of the header.
 
-|Hexadecimal Byte Value |S3 Format         |Second-Stage Compressor      |
-|-----------------------|------------------|-----------------------------|
-|0xAB                   |RGB DXT1          |None                         |
-|0xBB                   |RGB DXT1          |Snappy                       |
-|0xCB                   |RGB DXT1          |Consult decode instructions Section |
-|0xAE                   |RGBA DXT5         |None                         |
-|0xBE                   |RGBA DXT5         |Snappy                       |
-|0xCE                   |RGBA DXT5         |Consult decode instructions Section |
-|0xAF                   |Scaled YCoCg DXT5 |None                         |
-|0xBF                   |Scaled YCoCg DXT5 |Snappy                       |
-|0xCF                   |Scaled YCoCg DXT5 |Consult decode instructions Section |
+The fourth byte of the header is an unsigned integer denoting the type of that section.
 
-### Sections 
+###Top-Level Sections
 
-A section starts with the Section Header, and is followed by the section data which may be other sub-sections, or the data as described for that particular section.
+The following are the only section types permitted at the top level of a frame. Only one such section will be present per frame. The type of these sections indicates the S3 and second-stage compression formats in which the data is stored.
 
-#### Section Header
+|Type Field Byte Value |S3 Format         |Second-Stage Compressor      |
+|----------------------|------------------|-----------------------------|
+|0xAB                  |RGB DXT1          |None                         |
+|0xBB                  |RGB DXT1          |Snappy                       |
+|0xCB                  |RGB DXT1          |Consult decode instructions  |
+|0xAE                  |RGBA DXT5         |None                         |
+|0xBE                  |RGBA DXT5         |Snappy                       |
+|0xCE                  |RGBA DXT5         |Consult decode instructions  |
+|0xAF                  |Scaled YCoCg DXT5 |None                         |
+|0xBF                  |Scaled YCoCg DXT5 |Snappy                       |
+|0xCF                  |Scaled YCoCg DXT5 |Consult decode instructions  |
 
-A section header follows the same format as the Frame Header.
+####Simple Top-Level Sections
 
-The header will be four or eight bytes in size and records the format and combined size of the section. The size of the header is determined by the value of the first three bytes, or the last four bytes, depending on the vaues of the first three bytes.
+If the top-level section type indicates a single or no second-stage compressor, the section data is to be treated as indicated by the type. If a second-stage compressor is indicated then the section data is to be decompressed accordingly. The result of that decompression will be data in the indicated S3 format. If no second-stage compressor is indicated, the section data is in the indicated S3 format.
 
-When the first three bytes of the header each have the value zero, the header is eight bytes in size. The fifth, sixth, seventh and eighth bytes are an unsigned integer stored in little-endian byte order. This is the size of the section in bytes.
+####Decode Instructions
 
-When any of the first three bytes of the header have a non-zero value, the header is four bytes in size. The first three bytes are an unsigned integer stored in little-endian byte order. This is the size of the section in bytes.
+If the top-level section type indicates decode instructions, the section data is a single section containing instructions for decoding, immediately followed by the frame data. The result of decoding the frame data using the given instructions will be data in the indicated S3 format.
 
-The fourth byte is a code denoting the type of that section, and will be one of the following:
+|Type Field Byte Value |Meaning                       |
+|----------------------|------------------------------|
+|0x01                  |Decode Instructions Container |
 
-|Hexadecimal Byte Value | Meaning                       |
-|-----------------------|-------------------------------|
-| 0x01	                | Decode Instructions Container |
-| 0x02	                | Chunk Second-Stage Compressor Table |
-| 0x03	                | Chunk Size Table  | 
-| 0x04                  | Chunk Offset Table |
+#####Decode Instructions Container
 
-#### Section Types
+The Decode Instructions Container may contain the following sections which dictate the steps to decode the frame data.
 
-##### Decode Instructions Container
+|Type Field Byte Value |Meaning                             |
+|----------------------|------------------------------------|
+|0x02                  |Chunk Second-Stage Compressor Table |
+|0x03                  |Chunk Size Table                    | 
+|0x04                  |Chunk Offset Table                  |
 
-The Decode Instructions Container is the only permitted top-level section. Following the size and type fields it will contain any other required sections. The size indicates the total size of all the decode instruction sub-sections.
+A Chunk Second-Stage Compressor Table must be accompanied by a Chunk Size Table. The Chunk Offset Table may be omitted.
 
-##### Chunk Second-Stage Compressor Table
+The presence of any of these sections indicates that frame data is split into chunks, which are to be passed to their second-stage decompressor independently.
 
-The presence of this section indicates that frame data is split into chunks. Following the size and type fields comes a series of single-byte fields indicating the second-stage compressor for each chunk, with one of the following values:
+The number of chunks is indicated by the number of entries in these tables, which must be the same for each table.
 
-| Hexadecimal Byte Value | Compressor     |
-|-------------------|---------------------|
-| 0x0A               | Uncompressed        |
-| 0x0B               | Snappy              |
+In the absence of a Chunk Offset Table the offset from the start of the frame data to the start of each chunk is calculated by summing the sizes of the preceding chunks.
 
-The number of chunks can be calculated from the size of this section, that is to say, the size in bytes of this section is equal to the number of chunks. If second-stage compression is indicated, each chunk is to be passed to the second-stage decompressor independently. This section, if present, must be accompanied by a Chunk Size Table.
+#####Chunk Second-Stage Compressor Table
 
-##### Chunk Size Table
+The section data is a series of single-byte fields indicating the second-stage compressor for each chunk, with one of the following values:
 
-The presence of this section indicates that frame data is split into chunks. Following the size and type fields comes a series of four-byte fields being unsigned integers stored in little-endian byte order, and indicating the byte size of each chunk. The number of chunks is equal to the size of this section divided by four. If second-stage compression is used, each chunk should be passed to the second-stage decompressor independently. This section, if present, must be accompanied by a Chunk Second-Stage Compressor Table. The offset from the start of the frame data to the beginning of each chunk can be calcualated by summing the chunk size of all previous chunks.
+|Hexadecimal Byte Value |Compressor   |
+|-----------------------|-------------|
+|0x0A                   |Uncompressed |
+|0x0B                   |Snappy       |
 
-##### Chunk Offset Table
+#####Chunk Size Table
 
-The presence of this section indicates that each chunk has a custom offset. These offsets must be used to find the location of the data for each chunk, it can not be inferred from simply the Size Table. Following the size and type fields comes a series of four-byte fields indicating the offset in bytes of each chunk from the start of the frame data. Chunks can use the same offset. Both the Chunk Size Table and the Chunk Second-Stage Compressor Table sections must be present for this section to be present.
+The section data is a series of four-byte fields being unsigned integers stored in little-endian byte order, and indicating the byte size of each chunk.
 
-### Frame Data
+#####Chunk Offset Table
 
-The remainder of the frame is the frame data, starting immediately after the frame header and optional sections. The data is to be treated as indicated by the header and sections. If a second-stage compressor is indicated then the frame data is to be decompressed accordingly. The result of that decompression will be data in the indicated S3 format. If no second-stage compressor is indicated, the frame data is in the indicated S3 format.
+The section data is a series of four-byte fields being unsigned integers stored in little-endian byte order, indicating the offset in bytes of each chunk from the start of the frame data. 
 
 [1]: http://www.opengl.org/registry/specs/EXT/texture_compression_s3tc.txt
 [2]: http://snappy.googlecode.com/svn/trunk/format_description.txt
