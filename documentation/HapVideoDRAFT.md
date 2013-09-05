@@ -93,7 +93,7 @@ The number of chunks can be calculated from the size of this section, that is to
 
 ##### Chunk Size Table
 
-The presence of this section indicates that frame data is split into chunks. Following the size and type fields comes a series of four-byte fields being unsigned integers stored in little-endian byte order, and indicating the byte size of each chunk. The number of chunks is equal to the size of his section divided by four. If second-stage compression is used, each chunk should be passed to the second-stage decompressor independently. This section, if present, must be accompanied by a Chunk Second-Stage Compressor Table. The offset from the start of the frame data to the beginning of each chunk can be calcualated by summing the chunk size of all previous chunks.
+The presence of this section indicates that frame data is split into chunks. Following the size and type fields comes a series of four-byte fields being unsigned integers stored in little-endian byte order, and indicating the byte size of each chunk. The number of chunks is equal to the size of this section divided by four. If second-stage compression is used, each chunk should be passed to the second-stage decompressor independently. This section, if present, must be accompanied by a Chunk Second-Stage Compressor Table. The offset from the start of the frame data to the beginning of each chunk can be calcualated by summing the chunk size of all previous chunks.
 
 ##### Chunk Offset Table
 
