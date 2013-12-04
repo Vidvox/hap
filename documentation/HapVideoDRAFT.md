@@ -48,6 +48,8 @@ The fourth byte of the header is an unsigned integer denoting the S3 and second-
 |0xBE                   |RGBA DXT5         |Snappy                  |
 |0xAF                   |Scaled YCoCg DXT5 |None                    |
 |0xBF                   |Scaled YCoCg DXT5 |Snappy                  |
+|0xAC                   |RGBA BC7          |None                    |
+|0xBC                   |RGBA BC7          |Snappy                  |
 
 Frame Data
 ----------
