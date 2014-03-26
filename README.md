@@ -55,6 +55,7 @@ The following applications and environments have support for GPU-accelerated pla
 - [Millumin](http://www.millumin.com)
 - Cinder via [Cinder-Hap](http://github.com/rsodre/Cinder-Hap)
 - [TouchDesigner088](http://www.derivative.ca)
+- [d3 Media Servers](http://www.d3technologies.com/)
 - Max via [jit.gl.hap](http://cycling74.com/toolbox/jit-gl-hap/)
 - OpenFrameworks via [ofxHapPlayer](http://github.com/bangnoise/ofxHapPlayer)
 
