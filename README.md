@@ -58,6 +58,7 @@ The following applications and environments have support for GPU-accelerated pla
 - [d3 Media Servers](http://www.d3technologies.com/)
 - Max via [jit.gl.hap](http://cycling74.com/toolbox/jit-gl-hap/)
 - OpenFrameworks via [ofxHapPlayer](http://github.com/bangnoise/ofxHapPlayer)
+- Unity via [AV PRO QUICKTIME](http://www.renderheads.com/portfolio/UnityAVProQuickTime/)
 
 Developers: Supporting Hap In Your Applications
 ----
