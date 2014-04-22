@@ -75,3 +75,5 @@ The Hap codec project is open-source, licensed under a [Free BSD License](https:
 We like to know about software that supports Hap, so if you are using it for a project, please get in touch.
 
 This project was originally written by [Tom Butterworth](http://kriss.cx/tom/) and commissioned by [VIDVOX](http://www.vidvox.net), 2012.
+
+For [more information and performance stats read our post](http://vdmx.vidvox.net/blog/hap) on the VIDVOX blog.
