@@ -56,12 +56,14 @@ The following applications and environments have support for GPU-accelerated pla
 - [Blendy VJ](http://www.blendyvj.com/)
 - [TouchDesigner088](http://www.derivative.ca)
 - [d3 Media Servers](http://www.d3technologies.com/)
+- [modul8](http://www.garagecube.com/)
 - [VPT 7](http://hcgilje.wordpress.com/vpt/)
 - [GRoK](http://techlife.sg/GRoK/)
 - Cinder via [Cinder-Hap](http://github.com/rsodre/Cinder-Hap)
 - Max via [jit.gl.hap](http://cycling74.com/toolbox/jit-gl-hap/)
 - OpenFrameworks via [ofxHapPlayer](http://github.com/bangnoise/ofxHapPlayer)
 - Unity via [AV PRO QUICKTIME](http://www.renderheads.com/portfolio/UnityAVProQuickTime/)
+- Quartz Composer via [CoGeHapPlayer](https://github.com/lov/CoGeHapPlayer)
 
 Developers: Supporting Hap In Your Applications
 ----
