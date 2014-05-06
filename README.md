@@ -53,7 +53,7 @@ The following applications and environments have support for GPU-accelerated pla
 - [VDMX](http://www.vidvox.net)
 - [CoGe](http://cogevj.hu)
 - [Millumin](http://www.millumin.com)
-- [Blendy Dome](http://www.blendy.in/dome/)
+- [Blendy VJ](http://www.blendyvj.com/)
 - [TouchDesigner088](http://www.derivative.ca)
 - [d3 Media Servers](http://www.d3technologies.com/)
 - [VPT 7](http://hcgilje.wordpress.com/vpt/)
