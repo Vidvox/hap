@@ -59,6 +59,7 @@ The following applications and environments have support for GPU-accelerated pla
 - [modul8](http://www.garagecube.com/)
 - [VPT 7](http://hcgilje.wordpress.com/vpt/)
 - [GRoK](http://techlife.sg/GRoK/)
+- DirectShow via [Hap for DirectShow](http://www.renderheads.com/portfolio/HapDirectShow/)
 - Cinder via [Cinder-Hap](http://github.com/rsodre/Cinder-Hap)
 - Max via [jit.gl.hap](http://cycling74.com/toolbox/jit-gl-hap/)
 - OpenFrameworks via [ofxHapPlayer](http://github.com/bangnoise/ofxHapPlayer)
