@@ -15,7 +15,7 @@ There are three different Hap codecs: **Hap**, **Hap Alpha**, and **Hap Q**.
 - **Hap Alpha** has similar image quality to Hap, and supports an Alpha channel.
 - **Hap Q** has improved image quality, at the expense of larger file sizes.
 
-A [Hap QuickTime codec](http://github.com/vidvox/hap-qt-codec/) allows encoding and non-accelerated playback of Hap video in any application on Mac OS X, and assists accelerated playback in applications which support it.
+A [Hap QuickTime codec](http://github.com/vidvox/hap-qt-codec/) allows encoding and non-accelerated playback of Hap video in any application on Mac OS X and Windows, and assists accelerated playback in applications which support it. A [DirectShow codec](http://www.renderheads.com/portfolio/HapDirectShow/) is also available.
 
 Hap has some characteristics which you should consider before using it:
 
@@ -59,7 +59,6 @@ The following applications and environments have support for GPU-accelerated pla
 - [modul8](http://www.garagecube.com/)
 - [VPT 7](http://hcgilje.wordpress.com/vpt/)
 - [GRoK](http://techlife.sg/GRoK/)
-- DirectShow via [Hap for DirectShow](http://www.renderheads.com/portfolio/HapDirectShow/)
 - Cinder via [Cinder-Hap](http://github.com/rsodre/Cinder-Hap)
 - Max via [jit.gl.hap](http://cycling74.com/toolbox/jit-gl-hap/)
 - OpenFrameworks via [ofxHapPlayer](http://github.com/bangnoise/ofxHapPlayer)
@@ -69,7 +68,7 @@ The following applications and environments have support for GPU-accelerated pla
 Developers: Supporting Hap In Your Applications
 ----
 
-The simplest way to add Hap support to your application is to use QuickTime with the Hap QuickTime codec installed, making a custom request to receive S3TC frames which you then process with OpenGL. Discussion and sample code is available in the [Hap QuickTime Playback Demo](https://github.com/vidvox/hap-quicktime-playback-demo).
+The simplest way to add Hap support to your application is to use QuickTime with the Hap QuickTime codec installed, making a custom request to receive S3TC frames which you then process with OpenGL or DirectX. Discussion and sample code is available in the [Hap QuickTime Playback Demo](https://github.com/vidvox/hap-quicktime-playback-demo).
 
 If you need to parse raw Hap frames yourself, source code and a specification document are available as part of this project.
 
