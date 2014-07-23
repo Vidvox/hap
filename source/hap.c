@@ -418,6 +418,11 @@ unsigned int HapDecode(const void *inputBuffer, unsigned long inputBufferBytes,
     compressor = hap_top_4_bits(sectionType);
     textureFormat = hap_bottom_4_bits(sectionType);
 
+    if (compressor == kHapCompressorComplex && callback == NULL)
+    {
+        return HapResult_Bad_Arguments;
+    }
+
     /*
      Pass the texture format out
      */
