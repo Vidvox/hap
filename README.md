@@ -15,8 +15,11 @@ There are three different Hap codecs: **Hap**, **Hap Alpha**, and **Hap Q**.
 - **Hap Alpha** has similar image quality to Hap, and supports an Alpha channel.
 - **Hap Q** has improved image quality, at the expense of larger file sizes.
 
-A [Hap AVFoundation framework](http://github.com/Vidvox/hap-in-avfoundation) demonstrates encoding and decoding of Hap video on Mac OS X through AVFoundation.
-A [Hap QuickTime codec](http://github.com/vidvox/hap-qt-codec/) allows encoding and non-accelerated playback of Hap video in any application on Mac OS X and Windows, and assists accelerated playback in applications which support it. A [DirectShow codec](http://www.renderheads.com/portfolio/HapDirectShow/) is also available.
+
+To add Hap support in your application, there are currently three possible routes:
+
+– A [Hap AVFoundation framework](http://github.com/Vidvox/hap-in-avfoundation) demonstrates encoding and decoding of – Hap video on Mac OS X through AVFoundation.
+– A [Hap QuickTime codec](http://github.com/vidvox/hap-qt-codec/) allows encoding and non-accelerated playback of Hap video in any application on Mac OS X and Windows, and assists accelerated playback in applications which support it. – A [DirectShow codec](http://www.renderheads.com/portfolio/HapDirectShow/) is also available.
 
 Hap has some characteristics which you should consider before using it:
 
