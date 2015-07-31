@@ -56,6 +56,9 @@ The following are the only section types permitted at the top level of a frame. 
 |0xAF                  |Scaled YCoCg DXT5 |None                         |
 |0xBF                  |Scaled YCoCg DXT5 |Snappy                       |
 |0xCF                  |Scaled YCoCg DXT5 |Consult decode instructions  |
+|0xAC                  |RGBA BC7          |None                         |
+|0xBC                  |RGBA BC7          |Snappy                       |
+|0xCC                  |RGBA BC7          |Consult decode instructions  |
 
 ####Simple Top-Level Sections
 
