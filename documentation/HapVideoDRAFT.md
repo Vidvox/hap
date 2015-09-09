@@ -43,9 +43,9 @@ The fourth byte of the header is an unsigned integer denoting the type of that s
 
 ###Top-Level Sections
 
-The following are the only section types permitted at the top level of a frame. Only one such section will be present per frame. The type of these sections indicates the S3 and second-stage compression formats in which the data is stored.
+The following are the only section types permitted at the top level of a frame. Only one such section will be present per frame. The type of these sections indicates the Image Format and second-stage compression formats in which the data is stored.
 
-|Type Field Byte Value |S3 Format         |Second-Stage Compressor      |
+|Type Field Byte Value |Image Format      |Second-Stage Compressor      |
 |----------------------|------------------|-----------------------------|
 |0xAB                  |RGB DXT1          |None                         |
 |0xBB                  |RGB DXT1          |Snappy                       |
@@ -56,13 +56,16 @@ The following are the only section types permitted at the top level of a frame. 
 |0xAF                  |Scaled YCoCg DXT5 |None                         |
 |0xBF                  |Scaled YCoCg DXT5 |Snappy                       |
 |0xCF                  |Scaled YCoCg DXT5 |Consult decode instructions  |
+|0xAD                  |Scaled YCoCg DXT5 with separate Alpha |None |
+|0xBD                  |Scaled YCoCg DXT5 with separate Alpha |Snappy |
+|0xCD                  |Scaled YCoCg DXT5 with separate Alpha |Consult decode instructions |
 |0xAC                  |RGBA BC7          |None                         |
 |0xBC                  |RGBA BC7          |Snappy                       |
 |0xCC                  |RGBA BC7          |Consult decode instructions  |
 
 ####Simple Top-Level Sections
 
-If the top-level section type indicates a single or no second-stage compressor, the section data is to be treated as indicated by the type. If a second-stage compressor is indicated then the section data is to be decompressed accordingly. The result of that decompression will be data in the indicated S3 format. If no second-stage compressor is indicated, the section data is in the indicated S3 format.
+If the top-level section type indicates a single or no second-stage compressor, the section data is to be treated as indicated by the type. If a second-stage compressor is indicated then the section data is to be decompressed accordingly. The result of that decompression will be data in the indicated Image format. If no second-stage compressor is indicated, the section data is in the indicated Image format.
 
 ####Decode Instructions
 
@@ -111,5 +114,3 @@ The section data is a series of four-byte fields being unsigned integers stored 
 [2]: http://snappy.googlecode.com/svn/trunk/format_description.txt
 [3]: http://developer.download.nvidia.com/whitepapers/2007/Real-Time-YCoCg-DXT-Compression/Real-Time%20YCoCg-DXT%20Compression.pdf
 [4]: http://www.opengl.org/registry/specs/ARB/texture_compression_bptc.txt
-
-test
