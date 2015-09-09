@@ -62,7 +62,7 @@ The following are the only section types permitted at the top level of a frame. 
 |0xAA                  |8-bit Uncompressed Alpha |None                         |
 |0xBA                  |8-bit Uncompressed Alpha |Snappy                       |
 |0xCA                  |8-bit Uncompressed Alpha |Consult decode instructions  |
-|0x0D                  |Multi-image Section| Not Applicable |
+|0x0D                  |Multi-Image Section| Not Applicable |
 
 ####Simple Top-Level Sections
 
