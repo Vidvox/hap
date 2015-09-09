@@ -45,24 +45,24 @@ The fourth byte of the header is an unsigned integer denoting the type of that s
 
 The following are the only section types permitted at the top level of a frame. Only one top-level will be present per frame. The type of these sections indicates the Image Format(s) and second-stage compression formats in which the data is stored. In the case of a multi-image section, multiple sections containing each image's exact format/data will be present within the frame's top level section.
 
-|Type Field Byte Value |Image Format      |Second-Stage Compressor      |Multi-Image Section |
-|----------------------|------------------|-----------------------------|-------------------|
-|0xAB                  |RGB DXT1          |None                         | |
-|0xBB                  |RGB DXT1          |Snappy                       | |
-|0xCB                  |RGB DXT1          |Consult decode instructions  | |
-|0xAE                  |RGBA DXT5         |None                         | |
-|0xBE                  |RGBA DXT5         |Snappy                       | |
-|0xCE                  |RGBA DXT5         |Consult decode instructions  | |
-|0xAF                  |Scaled YCoCg DXT5 |None                         | |
-|0xBF                  |Scaled YCoCg DXT5 |Snappy                       | | 
-|0xCF                  |Scaled YCoCg DXT5 |Consult decode instructions  | |
-|0x0D                  |Scaled YCoCg DXT5 with separate Alpha | Not Applicable | X |
-|0xAC                  |RGBA BC7          |None                         | |
-|0xBC                  |RGBA BC7          |Snappy                       | | 
-|0xCC                  |RGBA BC7          |Consult decode instructions  | |
-|0xAA                  |8-bit Uncompressed Alpha |None                         | |
-|0xBA                  |8-bit Uncompressed Alpha |Snappy                       | | 
-|0xCA                  |8-bit Uncompressed Alpha |Consult decode instructions  | |
+|Type Field Byte Value |Image Format      |Second-Stage Compressor      |
+|----------------------|------------------|-----------------------------|
+|0xAB                  |RGB DXT1          |None                         |
+|0xBB                  |RGB DXT1          |Snappy                       |
+|0xCB                  |RGB DXT1          |Consult decode instructions  |
+|0xAE                  |RGBA DXT5         |None                         |
+|0xBE                  |RGBA DXT5         |Snappy                       |
+|0xCE                  |RGBA DXT5         |Consult decode instructions  |
+|0xAF                  |Scaled YCoCg DXT5 |None                         |
+|0xBF                  |Scaled YCoCg DXT5 |Snappy                       |
+|0xCF                  |Scaled YCoCg DXT5 |Consult decode instructions  |
+|0xAC                  |RGBA BC7          |None                         |
+|0xBC                  |RGBA BC7          |Snappy                       |
+|0xCC                  |RGBA BC7          |Consult decode instructions  |
+|0xAA                  |8-bit Uncompressed Alpha |None                         |
+|0xBA                  |8-bit Uncompressed Alpha |Snappy                       |
+|0xCA                  |8-bit Uncompressed Alpha |Consult decode instructions  |
+|0x0D                  |Multi-image Section| Not Applicable |
 
 ####Simple Top-Level Sections
 
@@ -70,6 +70,9 @@ If the top-level section type indicates a single or no second-stage compressor, 
 
 ####Multi-Image Section
 A multi-image top-level section will contain multiple image sections, each with a portion of the data required to create the full final image. For example a 'Scaled YCoCg DXT5 with separate Alpha' section will contain two image section, a Scaled YCoCg DXT5 section followed by an Alpha section. The RGB result from the Scaled YCoCg DXT5 section should be combined with the Alpha from the Alpha section to create a final RGBA image. Each image section follows the same rules as if they were a standalone top-level section.
+
+#####Legal Multi-Image Section combinations
+* Scaled YCoCg DXT5 + 8-bit Uncompressed Alpha
 
 ####Decode Instructions
 
