@@ -43,28 +43,28 @@ The fourth byte of the header is an unsigned integer denoting the type of that s
 
 ###Top-Level Sections
 
-The following are the only section types permitted at the top level of a frame. Only one such section will be present per frame. The type of these sections indicates the Image Format and second-stage compression formats in which the data is stored.
+The following are the only section types permitted at the top level of a frame. Only one top-level will be present per frame. The type of these sections indicates the Image Format(s) and second-stage compression formats in which the data is stored. In the case of a multi-image format, multiple sections containing each image's exact format/data will be present within the frame's top level section.
 
-|Type Field Byte Value |Image Format      |Second-Stage Compressor      |
-|----------------------|------------------|-----------------------------|
-|0xAB                  |RGB DXT1          |None                         |
-|0xBB                  |RGB DXT1          |Snappy                       |
-|0xCB                  |RGB DXT1          |Consult decode instructions  |
-|0xAE                  |RGBA DXT5         |None                         |
-|0xBE                  |RGBA DXT5         |Snappy                       |
-|0xCE                  |RGBA DXT5         |Consult decode instructions  |
-|0xAF                  |Scaled YCoCg DXT5 |None                         |
-|0xBF                  |Scaled YCoCg DXT5 |Snappy                       |
-|0xCF                  |Scaled YCoCg DXT5 |Consult decode instructions  |
-|0xAD                  |Scaled YCoCg DXT5 with separate Alpha |None |
-|0xBD                  |Scaled YCoCg DXT5 with separate Alpha |Snappy |
-|0xCD                  |Scaled YCoCg DXT5 with separate Alpha |Consult decode instructions |
-|0xAC                  |RGBA BC7          |None                         |
-|0xBC                  |RGBA BC7          |Snappy                       |
-|0xCC                  |RGBA BC7          |Consult decode instructions  |
-|0xAA                  |8-bit Uncompressed Alpha |None                         |
-|0xBA                  |8-bit Uncompressed Alpha |Snappy                       |
-|0xCA                  |8-bit Uncompressed Alpha |Consult decode instructions  |
+|Type Field Byte Value |Image Format      |Second-Stage Compressor      |Multi-Image Format |
+|----------------------|------------------|-----------------------------|-------------------|
+|0xAB                  |RGB DXT1          |None                         | |
+|0xBB                  |RGB DXT1          |Snappy                       | |
+|0xCB                  |RGB DXT1          |Consult decode instructions  | |
+|0xAE                  |RGBA DXT5         |None                         | |
+|0xBE                  |RGBA DXT5         |Snappy                       | |
+|0xCE                  |RGBA DXT5         |Consult decode instructions  | |
+|0xAF                  |Scaled YCoCg DXT5 |None                         | |
+|0xBF                  |Scaled YCoCg DXT5 |Snappy                       | | 
+|0xCF                  |Scaled YCoCg DXT5 |Consult decode instructions  | |
+|0xAD                  |Scaled YCoCg DXT5 with separate Alpha |None | X |
+|0xBD                  |Scaled YCoCg DXT5 with separate Alpha |Snappy | X |
+|0xCD                  |Scaled YCoCg DXT5 with separate Alpha |Consult decode instructions | X |
+|0xAC                  |RGBA BC7          |None                         | |
+|0xBC                  |RGBA BC7          |Snappy                       | | 
+|0xCC                  |RGBA BC7          |Consult decode instructions  | |
+|0xAA                  |8-bit Uncompressed Alpha |None                         | |
+|0xBA                  |8-bit Uncompressed Alpha |Snappy                       | | 
+|0xCA                  |8-bit Uncompressed Alpha |Consult decode instructions  | |
 
 ####Simple Top-Level Sections
 
