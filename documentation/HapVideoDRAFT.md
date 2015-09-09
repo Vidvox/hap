@@ -43,7 +43,7 @@ The fourth byte of the header is an unsigned integer denoting the type of that s
 
 ###Top-Level Sections
 
-The following are the only section types permitted at the top level of a frame. Only one top-level will be present per frame. The type of these sections indicates the Image Format(s) and second-stage compression formats in which the data is stored. In the case of a multi-image section, multiple sections containing each image's exact format/data will be present within the frame's top level section.
+The following are the only section types permitted at the top level of a frame. Only one top-level will be present per frame. The type of these sections indicates the Image Format(s) and second-stage compression formats in which the data is stored. In the case of a multi-image section, multiple sections containing each image's actual format/data will be present within the frame's top level section.
 
 |Type Field Byte Value |Image Format      |Second-Stage Compressor      |
 |----------------------|------------------|-----------------------------|
