@@ -62,6 +62,7 @@ The following applications and environments have support for GPU-accelerated pla
 - [TouchDesigner088](http://www.derivative.ca)
 - [d3 Media Servers](http://www.d3technologies.com/)
 - [modul8](http://www.garagecube.com/)
+- [MadMapper](http://www.madmapper.com/)
 - [Isadora](http://troikatronix.com)
 - [MixEmergency](http://www.inklen.com/mixemergency/)
 - [VPT 7](http://hcgilje.wordpress.com/vpt/)
