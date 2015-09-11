@@ -23,7 +23,8 @@ The correct encoding and decoding of Hap frames depends on compression schemes d
 2. Snappy Compression: described in the [Snappy Format Description][2]
 3. Scaled YCoCg DXT5 Texture Compression: described in [Real-Time YCoCg-DXT Compression][3], JMP van Waveren and Ignacio Castaño, September 2007
 4. BC7 Texture Compression: described in the [OpenGL BPTC Extension][4]
-4. RGTC/BC4 Texture Compression: described in the [OpenGL RGTC Extension][5]
+5. RGTC/BC4 Texture Compression: described in the [OpenGL RGTC Extension][5]
+
 ##Hap Frames
 
 
@@ -45,27 +46,27 @@ The fourth byte of the header is an unsigned integer denoting the type of that s
 
 The following are the only section types permitted at the top level of a frame. Only one top-level will be present per frame. The type of these sections indicates the Image Format(s) and second-stage compression formats in which the data is stored. In the case of a multi-image section, multiple sections containing each image's actual format/data will be present within the frame's top level section.
 
-|Type Field Byte Value |Image Format      |Second-Stage Compressor      |
-|----------------------|------------------|-----------------------------|
-|0xAB                  |RGB DXT1          |None                         |
-|0xBB                  |RGB DXT1          |Snappy                       |
-|0xCB                  |RGB DXT1          |Consult decode instructions  |
-|0xAE                  |RGBA DXT5         |None                         |
-|0xBE                  |RGBA DXT5         |Snappy                       |
-|0xCE                  |RGBA DXT5         |Consult decode instructions  |
-|0xAF                  |Scaled YCoCg DXT5 |None                         |
-|0xBF                  |Scaled YCoCg DXT5 |Snappy                       |
-|0xCF                  |Scaled YCoCg DXT5 |Consult decode instructions  |
-|0xAC                  |RGBA BC7          |None                         |
-|0xBC                  |RGBA BC7          |Snappy                       |
-|0xCC                  |RGBA BC7          |Consult decode instructions  |
-|0xAA                  |8-bit Uncompressed Alpha |None                         |
-|0xBA                  |8-bit Uncompressed Alpha |Snappy                       |
-|0xCA                  |8-bit Uncompressed Alpha |Consult decode instructions  |
-|0xA1                  |RGTC/BC4 Compressed Alpha |None                         |
-|0xB1                  |RGTC/BC4 Compressed Alpha |Snappy                       |
-|0xC1                  |RGTC/BC4 Compressed Alpha |Consult decode instructions  |
-|0x0D                  |Multi-Image Section| Not Applicable |
+|Type Field Byte Value |Pixel Format      | Pixel Compression |Second-Stage Compressor      |
+|----------------------|------------------|-------------------|-----------------------------|
+|0xAB                  |RGB               |DXT1          |None                         |
+|0xBB                  |RGB               |DXT1          |Snappy                       |
+|0xCB                  |RGB               |DXT1          |Consult decode instructions  |
+|0xAE                  |RGBA              |DXT5         |None                         |
+|0xBE                  |RGBA              |DXT5         |Snappy                       |
+|0xCE                  |RGBA              |DXT5         |Consult decode instructions  |
+|0xAF                  |Scaled YCoCg      |DXT5 |None                         |
+|0xBF                  |Scaled YCoCg      |DXT5 |Snappy                       |
+|0xCF                  |Scaled YCoCg      |DXT5 |Consult decode instructions  |
+|0xAC                  |RGBA              |BC7          |None                         |
+|0xBC                  |RGBA              |BC7          |Snappy                       |
+|0xCC                  |RGBA              |BC7          |Consult decode instructions  |
+|0xAA                  |Alpha             |Uncompressed  |None                         |
+|0xBA                  |Alpha             |Uncompressed  | Snappy                       |
+|0xCA                  |Alpha             |Uncompressed  |Consult decode instructions  |
+|0xA1                  |Alpha             |RGTC/BC4  |None                         |
+|0xB1                  |Alpha             |RGTC/BC4  |Snappy                       |
+|0xC1                  |Alpha             |RGTC/BC4 |Consult decode instructions  |
+|0x0D                  |Multi-Image Section| Not Applicable |  Not Applicable |
 
 ####Simple Top-Level Sections
 
