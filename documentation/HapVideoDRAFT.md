@@ -23,7 +23,7 @@ The correct encoding and decoding of Hap frames depends on compression schemes d
 2. Snappy Compression: described in the [Snappy Format Description][2]
 3. Scaled YCoCg DXT5 Texture Compression: described in [Real-Time YCoCg-DXT Compression][3], JMP van Waveren and Ignacio Castaño, September 2007
 4. BC7 Texture Compression: described in the [OpenGL BPTC Extension][4]
-
+4. RGTC/BC4 Texture Compression: described in the [OpenGL RGTC Extension][5]
 ##Hap Frames
 
 
@@ -125,3 +125,4 @@ The section data is a series of four-byte fields being unsigned integers stored 
 [2]: http://snappy.googlecode.com/svn/trunk/format_description.txt
 [3]: http://developer.download.nvidia.com/whitepapers/2007/Real-Time-YCoCg-DXT-Compression/Real-Time%20YCoCg-DXT%20Compression.pdf
 [4]: http://www.opengl.org/registry/specs/ARB/texture_compression_bptc.txt
+[5]: https://www.opengl.org/registry/specs/EXT/texture_compression_rgtc.txt
