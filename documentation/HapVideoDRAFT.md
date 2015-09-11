@@ -81,7 +81,7 @@ A multi-image top-level section will contain multiple image sections, each with 
 
 ####Decode Instructions
 
-If the top-level section type indicates decode instructions, the section data is a single section containing instructions for decoding, immediately followed by the frame data. The result of decoding the frame data using the given instructions will be data in the indicated S3 format.
+If the top-level section type indicates decode instructions, the section data is a single section containing instructions for decoding, immediately followed by the frame data. The result of decoding the frame data using the given instructions will be data in the indicated Image format.
 
 |Type Field Byte Value |Meaning                       |
 |----------------------|------------------------------|
