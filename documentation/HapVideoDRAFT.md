@@ -62,17 +62,21 @@ The following are the only section types permitted at the top level of a frame. 
 |0xAA                  |8-bit Uncompressed Alpha |None                         |
 |0xBA                  |8-bit Uncompressed Alpha |Snappy                       |
 |0xCA                  |8-bit Uncompressed Alpha |Consult decode instructions  |
+|0xA1                  |RGTC/BC4 Compressed Alpha |None                         |
+|0xB1                  |RGTC/BC4 Compressed Alpha |Snappy                       |
+|0xC1                  |RGTC/BC4 Compressed Alpha |Consult decode instructions  |
 |0x0D                  |Multi-Image Section| Not Applicable |
 
 ####Simple Top-Level Sections
 
-If the top-level section type indicates a single or no second-stage compressor, the section data is to be treated as indicated by the type. If a second-stage compressor is indicated then the section data is to be decompressed accordingly. The result of that decompression will be data in the indicated Image format. If no second-stage compressor is indicated, the section data is in the indicated Image format.
+If the top-level section type indicates a single or no second-stage compressor and is not a Multi-Image Section, the section data is to be treated as indicated by the type. If a second-stage compressor is indicated then the section data is to be decompressed accordingly. The result of that decompression will be data in the indicated Image format. If no second-stage compressor is indicated, the section data is in the indicated Image format.
 
 ####Multi-Image Section
-A multi-image top-level section will contain multiple image sections, each with a portion of the data required to create the full final image. For example a 'Scaled YCoCg DXT5 with separate Alpha' section will contain two image section, a Scaled YCoCg DXT5 section followed by an Alpha section. The RGB result from the Scaled YCoCg DXT5 section should be combined with the Alpha from the Alpha section to create a final RGBA image. Each image section follows the same rules as if they were a standalone top-level section.
+A multi-image top-level section will contain multiple image sections, each with a portion of the data required to create the full final image. For example a 'Scaled YCoCg DXT5 + 8-bit Uncompressed Alpha' section will contain two image sections, a Scaled YCoCg DXT5 section followed by an Alpha section. The RGB result from the Scaled YCoCg DXT5 section should be combined with the Alpha from the Alpha section to create a final RGBA image. Each image section follows the same rules as if they were a standalone top-level section.
 
 #####Legal Multi-Image Section combinations
 * Scaled YCoCg DXT5 + 8-bit Uncompressed Alpha
+* * Scaled YCoCg DXT5 + RGTC/BC4 Compressed Alpha
 
 ####Decode Instructions
 
