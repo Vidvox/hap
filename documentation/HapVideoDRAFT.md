@@ -77,7 +77,7 @@ A multi-image top-level section will contain multiple image sections, each with 
 
 #####Legal Multi-Image Section combinations
 * Scaled YCoCg DXT5 + 8-bit Uncompressed Alpha
-* * Scaled YCoCg DXT5 + RGTC/BC4 Compressed Alpha
+* Scaled YCoCg DXT5 + RGTC/BC4 Compressed Alpha
 
 ####Decode Instructions
 
