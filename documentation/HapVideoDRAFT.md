@@ -48,15 +48,15 @@ The following are the only section types permitted at the top level of a frame. 
 
 |Type Field Byte Value |Pixel Format      | Pixel Compression |Second-Stage Compressor      |
 |----------------------|------------------|-------------------|-----------------------------|
-|0xAB                  |RGB               |DXT1          |None                         |
-|0xBB                  |RGB               |DXT1          |Snappy                       |
-|0xCB                  |RGB               |DXT1          |Consult decode instructions  |
-|0xAE                  |RGBA              |DXT5         |None                         |
-|0xBE                  |RGBA              |DXT5         |Snappy                       |
-|0xCE                  |RGBA              |DXT5         |Consult decode instructions  |
-|0xAF                  |Scaled YCoCg      |DXT5 |None                         |
-|0xBF                  |Scaled YCoCg      |DXT5 |Snappy                       |
-|0xCF                  |Scaled YCoCg      |DXT5 |Consult decode instructions  |
+|0xAB                  |RGB               |DXT1/BC1          |None                         |
+|0xBB                  |RGB               |DXT1/BC1          |Snappy                       |
+|0xCB                  |RGB               |DXT1/BC1          |Consult decode instructions  |
+|0xAE                  |RGBA              |DXT5/BC3         |None                         |
+|0xBE                  |RGBA              |DXT5/BC3         |Snappy                       |
+|0xCE                  |RGBA              |DXT5/BC3         |Consult decode instructions  |
+|0xAF                  |Scaled YCoCg      |DXT5/BC3 |None                         |
+|0xBF                  |Scaled YCoCg      |DXT5/BC3 |Snappy                       |
+|0xCF                  |Scaled YCoCg      |DXT5/BC3 |Consult decode instructions  |
 |0xAC                  |RGBA              |BC7          |None                         |
 |0xBC                  |RGBA              |BC7          |Snappy                       |
 |0xCC                  |RGBA              |BC7          |Consult decode instructions  |
