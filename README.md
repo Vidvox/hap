@@ -67,6 +67,7 @@ The following applications and environments have support for GPU-accelerated pla
 - [MixEmergency](http://www.inklen.com/mixemergency/)
 - [VPT 7](http://hcgilje.wordpress.com/vpt/)
 - [GRoK](http://techlife.sg/GRoK/)
+- [Modulo Player](http://modulo-pi.com/en/)
 - [AVF Batch Converter](https://github.com/Vidvox/hap-in-avfoundation/releases)
 - Cinder via [Cinder-Hap](http://github.com/rsodre/Cinder-Hap)
 - Max via [jit.gl.hap](http://cycling74.com/toolbox/jit-gl-hap/)
