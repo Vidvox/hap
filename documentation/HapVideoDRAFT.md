@@ -44,7 +44,7 @@ The fourth byte of the header is an unsigned integer denoting the type of that s
 
 ###Top-Level Sections
 
-The following are the only section types permitted at the top level of a frame. Some of them are also valid in sub-sections as part of a Multi-Image frame, as descibed later on. Only one top-level will be present per frame. The type of these sections indicates the Image Format(s) and second-stage compression formats in which the data is stored. In the case of a multi-image section, multiple sections containing each image's actual format/data will be present within the frame's top level section.
+The following are the only section types permitted at the top level of a frame. Only one top-level section will be present per frame. The type of these sections indicates the image format(s) and second-stage compression formats in which the data is stored.
 
 |Type Field Byte Value |Pixel Format      | Pixel Compression |Second-Stage Compressor      |
 |----------------------|------------------|-------------------|-----------------------------|
@@ -60,28 +60,30 @@ The following are the only section types permitted at the top level of a frame. 
 |0xAC                  |RGBA              |BC7          |None                         |
 |0xBC                  |RGBA              |BC7          |Snappy                       |
 |0xCC                  |RGBA              |BC7          |Consult decode instructions  |
-|0xAA                  |Alpha             |Uncompressed  |None                         |
-|0xBA                  |Alpha             |Uncompressed  | Snappy                       |
-|0xCA                  |Alpha             |Uncompressed  |Consult decode instructions  |
-|0xA1                  |Alpha             |RGTC/BC4  |None                         |
-|0xB1                  |Alpha             |RGTC/BC4  |Snappy                       |
-|0xC1                  |Alpha             |RGTC/BC4 |Consult decode instructions  |
-|0x0D                  |Multi-Image Section| Not Applicable |  Not Applicable |
+|0xAA                  |Alpha             |8-bit Uncompressed  |None                         |
+|0xBA                  |Alpha             |8-bit Uncompressed  | Snappy                       |
+|0xCA                  |Alpha             |8-bit Uncompressed  |Consult decode instructions  |
+|0xA1                  |Alpha             |RGTC1/BC4  |None                         |
+|0xB1                  |Alpha             |RGTC1/BC4  |Snappy                       |
+|0xC1                  |Alpha             |RGTC1/BC4 |Consult decode instructions  |
+|0x0D                  |Multiple images   | Not Applicable |  Not Applicable |
 
 ####Simple Top-Level Sections
 
-If the top-level section type indicates a single or no second-stage compressor and is not a Multi-Image Section, the section data is to be treated as indicated by the type. If a second-stage compressor is indicated then the section data is to be decompressed accordingly. The result of that decompression will be data in the indicated Image format. If no second-stage compressor is indicated, the section data is in the indicated Image format.
+If the top-level section type indicates a single or no second-stage compressor, the section data is to be treated as indicated by the type. If a second-stage compressor is indicated then the section data is to be decompressed accordingly. The result of that decompression will be data in the indicated image format. If no second-stage compressor is indicated, the section data is in the indicated image format.
 
-####Multi-Image Section
-A multi-image top-level section will contain multiple image sections, each with a portion of the data required to create the full final image. For example a 'Scaled YCoCg DXT5 + 8-bit Uncompressed Alpha' section will contain two image sections, a Scaled YCoCg DXT5 section followed by an Alpha section. The RGB result from the Scaled YCoCg DXT5 section should be combined with the Alpha from the Alpha section to create a final RGBA image. Each image section follows the same rules as if they were a standalone top-level section.
+####Multiple-Image Sections
 
-#####Legal Multi-Image Section combinations
-* Scaled YCoCg DXT5 + 8-bit Uncompressed Alpha
-* Scaled YCoCg DXT5 + RGTC/BC4 Compressed Alpha
+If the top-level section type indicates multiple images, the section itself contains further top-level sections in a permitted combination. Each contained image section is treated as if it were a standalone top-level section, and the components of the images from these sections are combined to create the final image.
+
+|Permitted Multiple-Image Combinations          |
+|-----------------------------------------------|
+|Scaled YCoCg DXT5 + 8-bit Uncompressed Alpha   |
+|Scaled YCoCg DXT5 + RGTC1/BC4 Compressed Alpha |
 
 ####Decode Instructions
 
-If the top-level section type indicates decode instructions, the section data is a single section containing instructions for decoding, immediately followed by the frame data. The result of decoding the frame data using the given instructions will be data in the indicated Image format.
+If the top-level section type indicates decode instructions, the section data is a single section containing instructions for decoding, immediately followed by the frame data. The result of decoding the frame data using the given instructions will be data in the indicated image format.
 
 |Type Field Byte Value |Meaning                       |
 |----------------------|------------------------------|
