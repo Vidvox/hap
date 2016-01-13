@@ -262,6 +262,7 @@ unsigned int HapEncode(const void *inputBuffer, unsigned long inputBufferBytes, 
         || (compressor != HapCompressorNone
             && compressor != HapCompressorSnappy
             )
+        || outputBuffer == NULL
         )
     {
         return HapResult_Bad_Arguments;
