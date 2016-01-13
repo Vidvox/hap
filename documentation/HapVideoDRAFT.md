@@ -23,6 +23,7 @@ The correct encoding and decoding of Hap frames depends on compression schemes d
 2. Snappy Compression: described in the [Snappy Format Description][2]
 3. Scaled YCoCg DXT5 Texture Compression: described in [Real-Time YCoCg-DXT Compression][3], JMP van Waveren and Ignacio Castaño, September 2007
 4. BC7 Texture Compression: described in the [OpenGL BPTC Extension][4]
+5. RGTC/BC4 Texture Compression: described in the [OpenGL RGTC Extension][5]
 
 ##Hap Frames
 
@@ -43,30 +44,44 @@ The fourth byte of the header is an unsigned integer denoting the type of that s
 
 ###Top-Level Sections
 
-The following are the only section types permitted at the top level of a frame. Only one such section will be present per frame. The type of these sections indicates the S3 and second-stage compression formats in which the data is stored.
+The following are the only section types permitted at the top level of a frame. Some of them are also valid in sub-sections as part of a Multi-Image frame, as descibed later on. Only one top-level will be present per frame. The type of these sections indicates the Image Format(s) and second-stage compression formats in which the data is stored. In the case of a multi-image section, multiple sections containing each image's actual format/data will be present within the frame's top level section.
 
-|Type Field Byte Value |S3 Format         |Second-Stage Compressor      |
-|----------------------|------------------|-----------------------------|
-|0xAB                  |RGB DXT1          |None                         |
-|0xBB                  |RGB DXT1          |Snappy                       |
-|0xCB                  |RGB DXT1          |Consult decode instructions  |
-|0xAE                  |RGBA DXT5         |None                         |
-|0xBE                  |RGBA DXT5         |Snappy                       |
-|0xCE                  |RGBA DXT5         |Consult decode instructions  |
-|0xAF                  |Scaled YCoCg DXT5 |None                         |
-|0xBF                  |Scaled YCoCg DXT5 |Snappy                       |
-|0xCF                  |Scaled YCoCg DXT5 |Consult decode instructions  |
-|0xAC                  |RGBA BC7          |None                         |
-|0xBC                  |RGBA BC7          |Snappy                       |
-|0xCC                  |RGBA BC7          |Consult decode instructions  |
+|Type Field Byte Value |Pixel Format      | Pixel Compression |Second-Stage Compressor      |
+|----------------------|------------------|-------------------|-----------------------------|
+|0xAB                  |RGB               |DXT1/BC1          |None                         |
+|0xBB                  |RGB               |DXT1/BC1          |Snappy                       |
+|0xCB                  |RGB               |DXT1/BC1          |Consult decode instructions  |
+|0xAE                  |RGBA              |DXT5/BC3         |None                         |
+|0xBE                  |RGBA              |DXT5/BC3         |Snappy                       |
+|0xCE                  |RGBA              |DXT5/BC3         |Consult decode instructions  |
+|0xAF                  |Scaled YCoCg      |DXT5/BC3 |None                         |
+|0xBF                  |Scaled YCoCg      |DXT5/BC3 |Snappy                       |
+|0xCF                  |Scaled YCoCg      |DXT5/BC3 |Consult decode instructions  |
+|0xAC                  |RGBA              |BC7          |None                         |
+|0xBC                  |RGBA              |BC7          |Snappy                       |
+|0xCC                  |RGBA              |BC7          |Consult decode instructions  |
+|0xAA                  |Alpha             |Uncompressed  |None                         |
+|0xBA                  |Alpha             |Uncompressed  | Snappy                       |
+|0xCA                  |Alpha             |Uncompressed  |Consult decode instructions  |
+|0xA1                  |Alpha             |RGTC/BC4  |None                         |
+|0xB1                  |Alpha             |RGTC/BC4  |Snappy                       |
+|0xC1                  |Alpha             |RGTC/BC4 |Consult decode instructions  |
+|0x0D                  |Multi-Image Section| Not Applicable |  Not Applicable |
 
 ####Simple Top-Level Sections
 
-If the top-level section type indicates a single or no second-stage compressor, the section data is to be treated as indicated by the type. If a second-stage compressor is indicated then the section data is to be decompressed accordingly. The result of that decompression will be data in the indicated S3 format. If no second-stage compressor is indicated, the section data is in the indicated S3 format.
+If the top-level section type indicates a single or no second-stage compressor and is not a Multi-Image Section, the section data is to be treated as indicated by the type. If a second-stage compressor is indicated then the section data is to be decompressed accordingly. The result of that decompression will be data in the indicated Image format. If no second-stage compressor is indicated, the section data is in the indicated Image format.
+
+####Multi-Image Section
+A multi-image top-level section will contain multiple image sections, each with a portion of the data required to create the full final image. For example a 'Scaled YCoCg DXT5 + 8-bit Uncompressed Alpha' section will contain two image sections, a Scaled YCoCg DXT5 section followed by an Alpha section. The RGB result from the Scaled YCoCg DXT5 section should be combined with the Alpha from the Alpha section to create a final RGBA image. Each image section follows the same rules as if they were a standalone top-level section.
+
+#####Legal Multi-Image Section combinations
+* Scaled YCoCg DXT5 + 8-bit Uncompressed Alpha
+* Scaled YCoCg DXT5 + RGTC/BC4 Compressed Alpha
 
 ####Decode Instructions
 
-If the top-level section type indicates decode instructions, the section data is a single section containing instructions for decoding, immediately followed by the frame data. The result of decoding the frame data using the given instructions will be data in the indicated S3 format.
+If the top-level section type indicates decode instructions, the section data is a single section containing instructions for decoding, immediately followed by the frame data. The result of decoding the frame data using the given instructions will be data in the indicated Image format.
 
 |Type Field Byte Value |Meaning                       |
 |----------------------|------------------------------|
@@ -111,3 +126,4 @@ The section data is a series of four-byte fields being unsigned integers stored 
 [2]: http://snappy.googlecode.com/svn/trunk/format_description.txt
 [3]: http://developer.download.nvidia.com/whitepapers/2007/Real-Time-YCoCg-DXT-Compression/Real-Time%20YCoCg-DXT%20Compression.pdf
 [4]: http://www.opengl.org/registry/specs/ARB/texture_compression_bptc.txt
+[5]: https://www.opengl.org/registry/specs/EXT/texture_compression_rgtc.txt
