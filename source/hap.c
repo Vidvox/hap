@@ -244,9 +244,9 @@ unsigned int HapEncode(const void *inputBuffer, unsigned long inputBufferBytes, 
 {
     size_t maxCompressedLength;
     size_t maxOutputBufferLength;
-    size_t headerLength;
+    size_t top_section_header_length;
     void *compressedStart;
-    size_t storedLength;
+    size_t top_section_length;
     unsigned int storedCompressor;
     unsigned int storedFormat;
 
@@ -284,26 +284,26 @@ unsigned int HapEncode(const void *inputBuffer, unsigned long inputBufferBytes, 
      */
     if (inputBufferBytes > kHapUInt24Max)
     {
-        headerLength = 8U;
+        top_section_header_length = 8U;
     }
     else
     {
-        headerLength = 4U;
+        top_section_header_length = 4U;
     }
     
-    maxOutputBufferLength = maxCompressedLength + headerLength;
+    maxOutputBufferLength = maxCompressedLength + top_section_header_length;
     if (outputBufferBytes < maxOutputBufferLength
         || outputBuffer == NULL)
     {
         return HapResult_Buffer_Too_Small;
     }
-    compressedStart = ((uint8_t *)outputBuffer) + headerLength;
+    compressedStart = ((uint8_t *)outputBuffer) + top_section_header_length;
     
     if (compressor == HapCompressorSnappy)
     {
         snappy_status result;
-        storedLength = outputBufferBytes;
-        result = snappy_compress((const char *)inputBuffer, inputBufferBytes, (char *)compressedStart, &storedLength);
+        top_section_length = outputBufferBytes;
+        result = snappy_compress((const char *)inputBuffer, inputBufferBytes, (char *)compressedStart, &top_section_length);
         if (result != SNAPPY_OK)
         {
             return HapResult_Internal_Error;
@@ -313,27 +313,27 @@ unsigned int HapEncode(const void *inputBuffer, unsigned long inputBufferBytes, 
     else
     {
         // HapCompressorNone
-        // Setting storedLength to 0 causes the frame to be used uncompressed
-        storedLength = 0;
+        // Setting top_section_length to 0 causes the frame to be used uncompressed
+        top_section_length = 0;
     }
     
     /*
      If our "compressed" frame is no smaller than our input frame then store the input uncompressed.
      */
-    if (storedLength == 0 || storedLength >= inputBufferBytes)
+    if (top_section_length == 0 || top_section_length >= inputBufferBytes)
     {
         memcpy(compressedStart, inputBuffer, inputBufferBytes);
-        storedLength = inputBufferBytes;
+        top_section_length = inputBufferBytes;
         storedCompressor = kHapCompressorNone;
     }
     
     storedFormat = hap_texture_format_identifier_for_format_constant(textureFormat);
     
-    hap_write_section_header(outputBuffer, headerLength, storedLength, hap_4_bit_packed_byte(storedCompressor, storedFormat));
+    hap_write_section_header(outputBuffer, top_section_header_length, top_section_length, hap_4_bit_packed_byte(storedCompressor, storedFormat));
     
     if (outputBufferBytesUsed != NULL)
     {
-        *outputBufferBytesUsed = storedLength + headerLength;
+        *outputBufferBytesUsed = top_section_length + top_section_header_length;
     }
     
     return HapResult_No_Error;
