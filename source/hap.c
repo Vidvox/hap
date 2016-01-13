@@ -591,7 +591,17 @@ unsigned int HapDecode(const void *inputBuffer, unsigned long inputBufferBytes,
                  */
                 bytesUsed = running_uncompressed_chunk_size;
 
-                callback((HapDecodeWorkFunction)hap_decode_chunk, chunk_info, chunk_count, info);
+                if (chunk_count == 1)
+                {
+                    /*
+                     We don't invoke the callback for one chunk, just decode it directly
+                     */
+                    hap_decode_chunk(chunk_info, 0);
+                }
+                else
+                {
+                    callback((HapDecodeWorkFunction)hap_decode_chunk, chunk_info, chunk_count, info);
+                }
 
                 /*
                  Check to see if we encountered any errors and report one of them
