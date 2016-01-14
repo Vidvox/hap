@@ -227,26 +227,71 @@ static unsigned int hap_texture_format_identifier_for_format_constant(unsigned i
     }
 }
 
-unsigned long HapMaxEncodedLength(unsigned long inputBytes)
+// Returns the length of a decode instructions container of chunk_count chunks
+// not including the section header
+static size_t hap_decode_instructions_length(unsigned int chunk_count)
 {
     /*
-     Actually our max encoded length is inputBytes + 8U but snappy may produce longer output
-     and the only way we can find out is by trying with a suitably-sized buffer
+     Calculate the size of our Decode Instructions Section
+     = Second-Stage Compressor Table + Chunk Size Table + headers for both sections
+     = chunk_count + (4 * chunk_count) + 4 + 4
      */
-    unsigned long compressedLength = snappy_max_compressed_length(inputBytes);
-    if (compressedLength < inputBytes) compressedLength = inputBytes;
-    return compressedLength + 8U;
+    size_t length = (5 * chunk_count) + 8;
+
+    return length;
+}
+
+static unsigned int hap_limited_chunk_count_for_frame(size_t input_bytes, unsigned int texture_format, unsigned int chunk_count)
+{
+    // This is a hard limit due to the 4-byte headers we use for the decode instruction container
+    // (0xFFFFFF == count + (4 x count) + 20)
+    if (chunk_count > 3355431)
+    {
+        chunk_count = 3355431;
+    }
+    // Divide frame equally on DXT block boundries (8 or 16 bytes)
+    unsigned long dxt_block_count = input_bytes / (texture_format == HapTextureFormat_RGB_DXT1 ? 8 : 16);
+    while (dxt_block_count % chunk_count != 0) {
+        chunk_count--;
+    }
+
+    return chunk_count;
+}
+
+static size_t hap_max_encoded_length(size_t input_bytes, unsigned int texture_format, unsigned int compressor, unsigned int chunk_count)
+{
+    size_t decode_instructions_length, max_compressed_length;
+
+    chunk_count = hap_limited_chunk_count_for_frame(input_bytes, texture_format, chunk_count);
+
+    decode_instructions_length = hap_decode_instructions_length(chunk_count);
+
+    if (compressor == HapCompressorSnappy)
+    {
+        size_t chunk_size = input_bytes / chunk_count;
+        max_compressed_length = snappy_max_compressed_length(chunk_size) * chunk_count;
+    }
+    else
+    {
+        max_compressed_length = input_bytes;
+    }
+
+    // top section header + decode instructions section header + decode instructions + compressed data
+    return max_compressed_length + 8U + decode_instructions_length + 4U;
+}
+
+unsigned long HapMaxEncodedLength(unsigned long inputBytes, unsigned int textureFormat, unsigned int chunkCount)
+{
+    // Assume snappy, the worst case
+    return hap_max_encoded_length(inputBytes, textureFormat, HapCompressorSnappy, chunkCount);
 }
 
 unsigned int HapEncode(const void *inputBuffer, unsigned long inputBufferBytes, unsigned int textureFormat,
-                       unsigned int compressor, void *outputBuffer, unsigned long outputBufferBytes,
-                       unsigned long *outputBufferBytesUsed)
+                       unsigned int compressor, unsigned int chunkCount, void *outputBuffer,
+                       unsigned long outputBufferBytes, unsigned long *outputBufferBytesUsed)
 {
-    size_t maxCompressedLength;
-    size_t maxOutputBufferLength;
-    size_t headerLength;
-    void *compressedStart;
-    size_t storedLength;
+    size_t top_section_header_length;
+    size_t top_section_length;
     unsigned int storedCompressor;
     unsigned int storedFormat;
 
@@ -262,16 +307,14 @@ unsigned int HapEncode(const void *inputBuffer, unsigned long inputBufferBytes, 
         || (compressor != HapCompressorNone
             && compressor != HapCompressorSnappy
             )
+        || outputBuffer == NULL
         )
     {
         return HapResult_Bad_Arguments;
     }
-    
-    maxCompressedLength = compressor == HapCompressorSnappy ? snappy_max_compressed_length(inputBufferBytes) : inputBufferBytes;
-    if (maxCompressedLength < inputBufferBytes)
+    else if (outputBufferBytes < hap_max_encoded_length(inputBufferBytes, textureFormat, compressor, chunkCount))
     {
-        // Sanity check in case a future Snappy promises to always compress
-        maxCompressedLength = inputBufferBytes;
+        return HapResult_Buffer_Too_Small;
     }
     
     /*
@@ -283,56 +326,105 @@ unsigned int HapEncode(const void *inputBuffer, unsigned long inputBufferBytes, 
      */
     if (inputBufferBytes > kHapUInt24Max)
     {
-        headerLength = 8U;
+        top_section_header_length = 8U;
     }
     else
     {
-        headerLength = 4U;
+        top_section_header_length = 4U;
     }
-    
-    maxOutputBufferLength = maxCompressedLength + headerLength;
-    if (outputBufferBytes < maxOutputBufferLength
-        || outputBuffer == NULL)
-    {
-        return HapResult_Buffer_Too_Small;
-    }
-    compressedStart = ((uint8_t *)outputBuffer) + headerLength;
-    
+
     if (compressor == HapCompressorSnappy)
     {
-        snappy_status result;
-        storedLength = outputBufferBytes;
-        result = snappy_compress((const char *)inputBuffer, inputBufferBytes, (char *)compressedStart, &storedLength);
-        if (result != SNAPPY_OK)
-        {
-            return HapResult_Internal_Error;
+        /*
+         We attempt to chunk as requested, and if resulting frame is larger than it is uncompressed then
+         store frame uncompressed
+         */
+
+        size_t decode_instructions_length;
+        size_t chunk_size, compress_buffer_remaining;
+        uint8_t *second_stage_compressor_table;
+        void *chunk_size_table;
+        char *compressed_data;
+        unsigned int i;
+
+        chunkCount = hap_limited_chunk_count_for_frame(inputBufferBytes, textureFormat, chunkCount);
+
+        second_stage_compressor_table = ((uint8_t *)outputBuffer) + top_section_header_length + 4 + 4;
+        chunk_size_table = ((uint8_t *)outputBuffer) + top_section_header_length + 4 + 4 + chunkCount + 4;
+
+        decode_instructions_length = hap_decode_instructions_length(chunkCount);
+
+        chunk_size = inputBufferBytes / chunkCount;
+
+        // write the Decode Instructions section header
+        hap_write_section_header(((uint8_t *)outputBuffer) + top_section_header_length, 4U, decode_instructions_length, kHapSectionDecodeInstructionsContainer);
+        // write the Second Stage Compressor Table section header
+        hap_write_section_header(((uint8_t *)outputBuffer) + top_section_header_length + 4U, 4U, chunkCount, kHapSectionChunkSecondStageCompressorTable);
+        // write the Chunk Size Table section header
+        hap_write_section_header(((uint8_t *)outputBuffer) + top_section_header_length + 4U + 4U + chunkCount, 4U, chunkCount * 4U, kHapSectionChunkSizeTable);
+
+        compressed_data = (char *)(((uint8_t *)outputBuffer) + top_section_header_length + 4 + decode_instructions_length);
+
+        compress_buffer_remaining = outputBufferBytes - top_section_header_length - 4 - decode_instructions_length;
+
+        top_section_length = 4 + decode_instructions_length;
+
+        for (i = 0; i < chunkCount; i++) {
+            size_t chunk_packed_length = compress_buffer_remaining;
+            const char *chunk_input_start = (const char *)(((uint8_t *)inputBuffer) + (chunk_size * i));
+            if (compressor == HapCompressorSnappy)
+            {
+                snappy_status result = snappy_compress(chunk_input_start, chunk_size, (char *)compressed_data, &chunk_packed_length);
+                if (result != SNAPPY_OK)
+                {
+                    return HapResult_Internal_Error;
+                }
+            }
+
+            if (compressor == HapCompressorNone || chunk_packed_length >= chunk_size)
+            {
+                // store the chunk uncompressed
+                memcpy(compressed_data, chunk_input_start, chunk_size);
+                chunk_packed_length = chunk_size;
+                second_stage_compressor_table[i] = kHapCompressorNone;
+            }
+            else
+            {
+                // ie we used snappy and saved some space
+                second_stage_compressor_table[i] = kHapCompressorSnappy;
+            }
+            hap_write_4_byte_uint(((uint8_t *)chunk_size_table) + (i * 4), chunk_packed_length);
+            compressed_data += chunk_packed_length;
+            top_section_length += chunk_packed_length;
+            compress_buffer_remaining -= chunk_packed_length;
         }
-        storedCompressor = kHapCompressorSnappy;
+
+        if (top_section_length < inputBufferBytes + top_section_header_length)
+        {
+            // use the complex storage because snappy compression saved space
+            storedCompressor = kHapCompressorComplex;
+        }
+        else
+        {
+            // Signal to store the frame uncompressed
+            compressor = HapCompressorNone;
+        }
     }
-    else
+
+    if (compressor == HapCompressorNone)
     {
-        // HapCompressorNone
-        // Setting storedLength to 0 causes the frame to be used uncompressed
-        storedLength = 0;
-    }
-    
-    /*
-     If our "compressed" frame is no smaller than our input frame then store the input uncompressed.
-     */
-    if (storedLength == 0 || storedLength >= inputBufferBytes)
-    {
-        memcpy(compressedStart, inputBuffer, inputBufferBytes);
-        storedLength = inputBufferBytes;
+        memcpy(((uint8_t *)outputBuffer) + top_section_header_length, inputBuffer, inputBufferBytes);
+        top_section_length = inputBufferBytes;
         storedCompressor = kHapCompressorNone;
     }
     
     storedFormat = hap_texture_format_identifier_for_format_constant(textureFormat);
     
-    hap_write_section_header(outputBuffer, headerLength, storedLength, hap_4_bit_packed_byte(storedCompressor, storedFormat));
+    hap_write_section_header(outputBuffer, top_section_header_length, top_section_length, hap_4_bit_packed_byte(storedCompressor, storedFormat));
     
     if (outputBufferBytesUsed != NULL)
     {
-        *outputBufferBytesUsed = storedLength + headerLength;
+        *outputBufferBytesUsed = top_section_length + top_section_header_length;
     }
     
     return HapResult_No_Error;
@@ -591,7 +683,17 @@ unsigned int HapDecode(const void *inputBuffer, unsigned long inputBufferBytes,
                  */
                 bytesUsed = running_uncompressed_chunk_size;
 
-                callback((HapDecodeWorkFunction)hap_decode_chunk, chunk_info, chunk_count, info);
+                if (chunk_count == 1)
+                {
+                    /*
+                     We don't invoke the callback for one chunk, just decode it directly
+                     */
+                    hap_decode_chunk(chunk_info, 0);
+                }
+                else
+                {
+                    callback((HapDecodeWorkFunction)hap_decode_chunk, chunk_info, chunk_count, info);
+                }
 
                 /*
                  Check to see if we encountered any errors and report one of them
