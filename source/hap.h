@@ -64,17 +64,18 @@ typedef void (*HapDecodeCallback)(HapDecodeWorkFunction function, void *p, unsig
 /*
  Returns the maximum size of an output buffer for an input buffer of inputBytes length.
  */
-unsigned long HapMaxEncodedLength(unsigned long inputBytes);
+unsigned long HapMaxEncodedLength(unsigned long inputBytes, unsigned int textureFormat, unsigned int chunkCount);
 
 /*
  Encodes inputBuffer which is a buffer containing texture data of format textureFormat, or returns an error.
  Use HapMaxEncodedLength() to discover the minimal value for outputBufferBytes.
+ The frame will be compressed using compressor in chunkCount chunks to permit multithreaded decoding.
  If this returns HapResult_No_Error and outputBufferBytesUsed is not NULL then outputBufferBytesUsed will be set
  to the actual encoded length of the output buffer.
  */
 unsigned int HapEncode(const void *inputBuffer, unsigned long inputBufferBytes, unsigned int textureFormat,
-                       unsigned int compressor, void *outputBuffer, unsigned long outputBufferBytes,
-                       unsigned long *outputBufferBytesUsed);
+                       unsigned int compressor, unsigned int chunkCount, void *outputBuffer,
+                       unsigned long outputBufferBytes, unsigned long *outputBufferBytesUsed);
 
 /*
  Decodes inputBuffer which is a Hap frame.
