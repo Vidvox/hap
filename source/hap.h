@@ -33,13 +33,16 @@ extern "C" {
 #endif
 
 /*
- These match the constants defined by GL_EXT_texture_compression_s3tc
+ These match the constants defined by GL_EXT_texture_compression_s3tc and
+ GL_ARB_texture_compression_rgtc
  */
 
 enum HapTextureFormat {
     HapTextureFormat_RGB_DXT1 = 0x83F0,
     HapTextureFormat_RGBA_DXT5 = 0x83F3,
-    HapTextureFormat_YCoCg_DXT5 = 0x01
+    HapTextureFormat_YCoCg_DXT5 = 0x01,
+    HapTextureFormat_A_RGTC1 = 0x8DBB,
+    HapTextureFormat_A_8 = 0x02
 };
 
 enum HapCompressor {
