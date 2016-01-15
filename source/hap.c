@@ -377,11 +377,16 @@ unsigned int HapEncode(const void *inputBuffer, unsigned long inputBufferBytes, 
         unsigned int i;
 
         chunkCount = hap_limited_chunk_count_for_frame(inputBufferBytes, textureFormat, chunkCount);
+        decode_instructions_length = hap_decode_instructions_length(chunkCount);
+
+        // Check we have space for the Decode Instructions Container
+        if ((inputBufferBytes + decode_instructions_length + 4) > kHapUInt24Max)
+        {
+            top_section_header_length = 8U;
+        }
 
         second_stage_compressor_table = ((uint8_t *)outputBuffer) + top_section_header_length + 4 + 4;
         chunk_size_table = ((uint8_t *)outputBuffer) + top_section_header_length + 4 + 4 + chunkCount + 4;
-
-        decode_instructions_length = hap_decode_instructions_length(chunkCount);
 
         chunk_size = inputBufferBytes / chunkCount;
 
