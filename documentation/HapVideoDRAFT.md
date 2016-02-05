@@ -74,7 +74,7 @@ If the top-level section type indicates a single or no second-stage compressor, 
 
 ####Multiple-Image Sections
 
-If the top-level section type indicates multiple images, the section itself contains further top-level sections in a permitted combination. Each contained image section is treated as if it were a standalone top-level section, and the components of the images from these sections are combined to create the final image.
+If the top-level section type indicates multiple images, the section itself contains one top-level section in any image format, or two top-level sections in a permitted combination. Where two images are contained, the dimensions of each image must match. Each contained image section is treated as if it were a standalone top-level section, and the components of the images from these sections are combined to create the final image.
 
 |Permitted Multiple-Image Combinations          |
 |-----------------------------------------------|
