@@ -60,9 +60,6 @@ The following are the only section types permitted at the top level of a frame. 
 |0xAC                  |RGBA            |BC7                |None                        |
 |0xBC                  |RGBA            |BC7                |Snappy                      |
 |0xCC                  |RGBA            |BC7                |Consult decode instructions |
-|0xAA                  |Alpha           |8-bit Uncompressed |None                        |
-|0xBA                  |Alpha           |8-bit Uncompressed |Snappy                      |
-|0xCA                  |Alpha           |8-bit Uncompressed |Consult decode instructions |
 |0xA1                  |Alpha           |RGTC1/BC4          |None                        |
 |0xB1                  |Alpha           |RGTC1/BC4          |Snappy                      |
 |0xC1                  |Alpha           |RGTC1/BC4          |Consult decode instructions |
@@ -78,7 +75,6 @@ If the top-level section type indicates multiple images, the section itself cont
 
 |Permitted Multiple-Image Combinations          |
 |-----------------------------------------------|
-|Scaled YCoCg DXT5 + 8-bit Uncompressed Alpha   |
 |Scaled YCoCg DXT5 + RGTC1/BC4 Compressed Alpha |
 
 ####Decode Instructions

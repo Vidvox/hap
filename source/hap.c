@@ -46,7 +46,6 @@
 #define kHapFormatRGBADXT5 0xE
 #define kHapFormatYCoCgDXT5 0xF
 #define kHapFormatARGTC1 0x1
-#define kHapFormatA8 0xA
 
 /*
  Packed byte values for Hap
@@ -65,9 +64,6 @@
  A_RGTC1        None            0xA1
  A_RGTC1        Snappy          0xB1
  A_RGTC1        Complex         0xC1
- A_8            None            0xAA
- A_8            Snappy          0xBA
- A_8            Complex         0xCA
  */
 
 /*
@@ -216,8 +212,6 @@ static unsigned int hap_texture_format_constant_for_format_identifier(unsigned i
             return HapTextureFormat_YCoCg_DXT5;
         case kHapFormatARGTC1:
             return HapTextureFormat_A_RGTC1;
-        case kHapFormatA8:
-            return HapTextureFormat_A_8;
         default:
             return 0;
             
@@ -237,8 +231,6 @@ static unsigned int hap_texture_format_identifier_for_format_constant(unsigned i
             return kHapFormatYCoCgDXT5;
         case HapTextureFormat_A_RGTC1:
             return kHapFormatARGTC1;
-        case HapTextureFormat_A_8:
-            return kHapFormatA8;
         default:
             return 0;
     }
@@ -272,9 +264,6 @@ static unsigned int hap_limited_chunk_count_for_frame(size_t input_bytes, unsign
         case HapTextureFormat_RGB_DXT1:
         case HapTextureFormat_A_RGTC1:
             dxt_block_count = input_bytes / 8;
-            break;
-        case HapTextureFormat_A_8:
-            dxt_block_count = input_bytes;
             break;
         default:
             dxt_block_count = input_bytes / 16;
@@ -347,7 +336,6 @@ static unsigned int hap_encode_texture(const void *inputBuffer, unsigned long in
             && textureFormat != HapTextureFormat_RGBA_DXT5
             && textureFormat != HapTextureFormat_YCoCg_DXT5
             && textureFormat != HapTextureFormat_A_RGTC1
-            && textureFormat != HapTextureFormat_A_8
             )
         || (compressor != HapCompressorNone
             && compressor != HapCompressorSnappy
@@ -516,13 +504,11 @@ unsigned int HapEncode(unsigned int count,
                                   outputBufferBytesUsed);
     }
     else if ((textureFormats[0] != HapTextureFormat_YCoCg_DXT5 && textureFormats[1] != HapTextureFormat_YCoCg_DXT5)
-             && (textureFormats[0] != HapTextureFormat_A_8 && textureFormats[0] != HapTextureFormat_A_RGTC1
-                 && textureFormats[1] != HapTextureFormat_A_8 && textureFormats[1] != HapTextureFormat_A_RGTC1))
+             && (textureFormats[0] != HapTextureFormat_A_RGTC1 && textureFormats[1] != HapTextureFormat_A_RGTC1))
     {
         /*
          Permitted combinations:
          HapTextureFormat_YCoCg_DXT5 + HapTextureFormat_A_RGTC1
-         HapTextureFormat_YCoCg_DXT5 + HapTextureFormat_A_8
          */
         return HapResult_Bad_Arguments;
     }
