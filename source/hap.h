@@ -65,23 +65,49 @@ typedef void (*HapDecodeWorkFunction)(void *p, unsigned int index);
 typedef void (*HapDecodeCallback)(HapDecodeWorkFunction function, void *p, unsigned int count, void *info);
 
 /*
- Returns the maximum size of an output buffer for an input buffer of inputBytes length.
+ Returns the maximum size of an output buffer for a frame composed of multiple textures.
+ count is the number of textures
+ lengths is an array of input texture lengths in bytes
+ textureFormats is an array of HapTextureFormats
+ chunkCounts is an array of chunk counts
  */
-unsigned long HapMaxEncodedLength(unsigned long inputBytes, unsigned int textureFormat, unsigned int chunkCount);
+unsigned long HapMaxEncodedLength(unsigned int count,
+                                  unsigned long *lengths,
+                                  unsigned int *textureFormats,
+                                  unsigned int *chunkCounts);
 
 /*
- Encodes inputBuffer which is a buffer containing texture data of format textureFormat, or returns an error.
+ Encodes one or multiple textures into one Hap frame, or returns an error.
+
+ Permitted multiple-texture combinations are:
+  HapTextureFormat_YCoCg_DXT5 + HapTextureFormat_A_RGTC1
+  HapTextureFormat_YCoCg_DXT5 + HapTextureFormat_A_8
+
  Use HapMaxEncodedLength() to discover the minimal value for outputBufferBytes.
- The frame will be compressed using compressor in chunkCount chunks to permit multithreaded decoding.
- If this returns HapResult_No_Error and outputBufferBytesUsed is not NULL then outputBufferBytesUsed will be set
- to the actual encoded length of the output buffer.
- */
-unsigned int HapEncode(const void *inputBuffer, unsigned long inputBufferBytes, unsigned int textureFormat,
-                       unsigned int compressor, unsigned int chunkCount, void *outputBuffer,
-                       unsigned long outputBufferBytes, unsigned long *outputBufferBytesUsed);
+ count is the number of textures (1 or 2)
+ inputBuffers is an array of count pointers to texture data
+ inputBufferBytes is an array of texture data lengths in bytes
+ textureFormats is an array of HapTextureFormats
+ compressors is an array of HapCompressors
+ chunkCounts is an array of chunk counts to permit multithreaded decoding
+ outputBuffer is the destination buffer to receive the encoded frame
+ outputBufferBytes is the destination buffer's length in bytes
+ outputBufferBytesUsed will be set to the actual encoded length of the frame on return
+*/
+unsigned int HapEncode(unsigned int count,
+                       const void **inputBuffers, unsigned long *inputBuffersBytes,
+                       unsigned int *textureFormats,
+                       unsigned int *compressors,
+                       unsigned int *chunkCounts,
+                       void *outputBuffer, unsigned long outputBufferBytes,
+                       unsigned long *outputBufferBytesUsed);
 
 /*
- Decodes inputBuffer which is a Hap frame.
+ Decodes a texture from inputBuffer which is a Hap frame.
+
+ A frame may contain multiple textures which are to be combined to create the final image. Use HapGetFrameTextureCount()
+ to discover the number of textures in a frame, and then access each texture by incrementing the index argument to this
+ function.
 
  If the frame permits multithreaded decoding, callback will be called once for you to invoke a platform-appropriate
  mechanism to assign work to threads, and trigger that work by calling the function passed to your callback the number
@@ -103,15 +129,21 @@ unsigned int HapEncode(const void *inputBuffer, unsigned long inputBufferBytes, 
  outputBufferTextureFormat must be non-NULL, and will be set to one of the HapTextureFormat constants.
  */
 unsigned int HapDecode(const void *inputBuffer, unsigned long inputBufferBytes,
+                       unsigned int index,
                        HapDecodeCallback callback, void *info,
                        void *outputBuffer, unsigned long outputBufferBytes,
                        unsigned long *outputBufferBytesUsed,
                        unsigned int *outputBufferTextureFormat);
 
 /*
- On return sets outputBufferTextureFormat to a HapTextureFormat constant describing the texture format of the frame.
+ If this returns HapResult_No_Error then outputTextureCount is set to the count of textures in the frame.
  */
-unsigned int HapGetFrameTextureFormat(const void *inputBuffer, unsigned long inputBufferBytes, unsigned int *outputBufferTextureFormat);
+unsigned int HapGetFrameTextureCount(const void *inputBuffer, unsigned long inputBufferBytes, unsigned int *outputTextureCount);
+
+/*
+ On return sets outputBufferTextureFormat to a HapTextureFormat constant describing the format of the texture at index in the frame.
+ */
+unsigned int HapGetFrameTextureFormat(const void *inputBuffer, unsigned long inputBufferBytes, unsigned int index, unsigned int *outputBufferTextureFormat);
 
 #ifdef __cplusplus
 }
