@@ -69,6 +69,7 @@ The following applications and environments have support for GPU-accelerated pla
 - [GRoK](http://techlife.sg/GRoK/)
 - [Modulo Player](http://modulo-pi.com/en/)
 - [AVF Batch Converter](https://github.com/Vidvox/hap-in-avfoundation/releases)
+- [Dataton Watchout](http://www.dataton.com/watchout)
 - Cinder via [Cinder-Hap](http://github.com/rsodre/Cinder-Hap)
 - Max via [jit.gl.hap](http://cycling74.com/toolbox/jit-gl-hap/)
 - OpenFrameworks via [ofxHapPlayer](http://github.com/bangnoise/ofxHapPlayer)
