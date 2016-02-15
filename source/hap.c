@@ -45,6 +45,7 @@
 #define kHapFormatRGBDXT1 0xB
 #define kHapFormatRGBADXT5 0xE
 #define kHapFormatYCoCgDXT5 0xF
+#define kHapFormatARGTC1 0x1
 
 /*
  Packed byte values for Hap
@@ -60,11 +61,15 @@
  YCoCg_DXT5     None            0xAF
  YCoCg_DXT5     Snappy          0xBF
  YCoCg_DXT5     Complex         0xCF
+ A_RGTC1        None            0xA1
+ A_RGTC1        Snappy          0xB1
+ A_RGTC1        Complex         0xC1
  */
 
 /*
  Hap Frame Section Types
  */
+#define kHapSectionMultipleImages 0x0D
 #define kHapSectionDecodeInstructionsContainer 0x01
 #define kHapSectionChunkSecondStageCompressorTable 0x02
 #define kHapSectionChunkSizeTable 0x03
@@ -205,6 +210,8 @@ static unsigned int hap_texture_format_constant_for_format_identifier(unsigned i
             return HapTextureFormat_RGBA_DXT5;
         case kHapFormatYCoCgDXT5:
             return HapTextureFormat_YCoCg_DXT5;
+        case kHapFormatARGTC1:
+            return HapTextureFormat_A_RGTC1;
         default:
             return 0;
             
@@ -222,6 +229,8 @@ static unsigned int hap_texture_format_identifier_for_format_constant(unsigned i
             return kHapFormatRGBADXT5;
         case HapTextureFormat_YCoCg_DXT5:
             return kHapFormatYCoCgDXT5;
+        case HapTextureFormat_A_RGTC1:
+            return kHapFormatARGTC1;
         default:
             return 0;
     }
@@ -250,7 +259,15 @@ static unsigned int hap_limited_chunk_count_for_frame(size_t input_bytes, unsign
         chunk_count = 3355431;
     }
     // Divide frame equally on DXT block boundries (8 or 16 bytes)
-    unsigned long dxt_block_count = input_bytes / (texture_format == HapTextureFormat_RGB_DXT1 ? 8 : 16);
+    unsigned long dxt_block_count;
+    switch (texture_format) {
+        case HapTextureFormat_RGB_DXT1:
+        case HapTextureFormat_A_RGTC1:
+            dxt_block_count = input_bytes / 8;
+            break;
+        default:
+            dxt_block_count = input_bytes / 16;
+    }
     while (dxt_block_count % chunk_count != 0) {
         chunk_count--;
     }
@@ -280,15 +297,30 @@ static size_t hap_max_encoded_length(size_t input_bytes, unsigned int texture_fo
     return max_compressed_length + 8U + decode_instructions_length + 4U;
 }
 
-unsigned long HapMaxEncodedLength(unsigned long inputBytes, unsigned int textureFormat, unsigned int chunkCount)
+unsigned long HapMaxEncodedLength(unsigned int count,
+                                  unsigned long *inputBytes,
+                                  unsigned int *textureFormats,
+                                  unsigned int *chunkCounts)
 {
-    // Assume snappy, the worst case
-    return hap_max_encoded_length(inputBytes, textureFormat, HapCompressorSnappy, chunkCount);
+    // Start with the length of a multiple-image section header
+    unsigned long total_length = 8;
+
+    if (count == 0 || count > 2)
+    {
+        return HapResult_Bad_Arguments;
+    }
+
+    for (int i = 0; i < count; i++) {
+        // Assume snappy, the worst case
+        total_length += hap_max_encoded_length(inputBytes[i], textureFormats[i], HapCompressorSnappy, chunkCounts[i]);
+    }
+
+    return total_length;
 }
 
-unsigned int HapEncode(const void *inputBuffer, unsigned long inputBufferBytes, unsigned int textureFormat,
-                       unsigned int compressor, unsigned int chunkCount, void *outputBuffer,
-                       unsigned long outputBufferBytes, unsigned long *outputBufferBytesUsed)
+static unsigned int hap_encode_texture(const void *inputBuffer, unsigned long inputBufferBytes, unsigned int textureFormat,
+                                       unsigned int compressor, unsigned int chunkCount, void *outputBuffer,
+                                       unsigned long outputBufferBytes, unsigned long *outputBufferBytesUsed)
 {
     size_t top_section_header_length;
     size_t top_section_length;
@@ -303,11 +335,13 @@ unsigned int HapEncode(const void *inputBuffer, unsigned long inputBufferBytes, 
         || (textureFormat != HapTextureFormat_RGB_DXT1
             && textureFormat != HapTextureFormat_RGBA_DXT5
             && textureFormat != HapTextureFormat_YCoCg_DXT5
+            && textureFormat != HapTextureFormat_A_RGTC1
             )
         || (compressor != HapCompressorNone
             && compressor != HapCompressorSnappy
             )
         || outputBuffer == NULL
+        || outputBufferBytesUsed == NULL
         )
     {
         return HapResult_Bad_Arguments;
@@ -426,13 +460,102 @@ unsigned int HapEncode(const void *inputBuffer, unsigned long inputBufferBytes, 
     storedFormat = hap_texture_format_identifier_for_format_constant(textureFormat);
     
     hap_write_section_header(outputBuffer, top_section_header_length, top_section_length, hap_4_bit_packed_byte(storedCompressor, storedFormat));
-    
-    if (outputBufferBytesUsed != NULL)
-    {
-        *outputBufferBytesUsed = top_section_length + top_section_header_length;
-    }
-    
+
+    *outputBufferBytesUsed = top_section_length + top_section_header_length;
+
     return HapResult_No_Error;
+}
+
+unsigned int HapEncode(unsigned int count,
+                       const void **inputBuffers, unsigned long *inputBuffersBytes,
+                       unsigned int *textureFormats,
+                       unsigned int *compressors,
+                       unsigned int *chunkCounts,
+                       void *outputBuffer, unsigned long outputBufferBytes,
+                       unsigned long *outputBufferBytesUsed)
+{
+    size_t top_section_header_length;
+    size_t top_section_length;
+    unsigned long section_length;
+
+    if (count == 0 || count > 2 // A frame must contain one or two textures
+        || inputBuffers == NULL
+        || inputBuffersBytes == NULL
+        || textureFormats == NULL
+        || compressors == NULL
+        || chunkCounts == NULL
+        || outputBuffer == NULL
+        || outputBufferBytes == 0
+        || outputBufferBytesUsed == NULL)
+    {
+        return HapResult_Bad_Arguments;
+    }
+
+    if (count == 1)
+    {
+        // Encode without the multi-image layout
+        return hap_encode_texture(inputBuffers[0],
+                                  inputBuffersBytes[0],
+                                  textureFormats[0],
+                                  compressors[0],
+                                  chunkCounts[0],
+                                  outputBuffer,
+                                  outputBufferBytes,
+                                  outputBufferBytesUsed);
+    }
+    else if ((textureFormats[0] != HapTextureFormat_YCoCg_DXT5 && textureFormats[1] != HapTextureFormat_YCoCg_DXT5)
+             && (textureFormats[0] != HapTextureFormat_A_RGTC1 && textureFormats[1] != HapTextureFormat_A_RGTC1))
+    {
+        /*
+         Permitted combinations:
+         HapTextureFormat_YCoCg_DXT5 + HapTextureFormat_A_RGTC1
+         */
+        return HapResult_Bad_Arguments;
+    }
+    else
+    {
+        // Calculate the worst-case size for the top section and choose a header-length based on that
+        top_section_length = 0;
+        for (int i = 0; i < count; i++)
+        {
+            top_section_length += inputBuffersBytes[i] + hap_decode_instructions_length(chunkCounts[i]) + 4;
+        }
+
+        if (top_section_length > kHapUInt24Max)
+        {
+            top_section_header_length = 8U;
+        }
+        else
+        {
+            top_section_header_length = 4U;
+        }
+
+        // Encode each texture
+        top_section_length = 0;
+        for (int i = 0; i < count; i++)
+        {
+            void *section = ((uint8_t *)outputBuffer) + top_section_header_length + top_section_length;
+            unsigned int result = hap_encode_texture(inputBuffers[i],
+                                                     inputBuffersBytes[i],
+                                                     textureFormats[i],
+                                                     compressors[i],
+                                                     chunkCounts[i],
+                                                     section,
+                                                     outputBufferBytes - (top_section_header_length + top_section_length),
+                                                     &section_length);
+            if (result != HapResult_No_Error)
+            {
+                return result;
+            }
+            top_section_length += section_length;
+        }
+
+        hap_write_section_header(outputBuffer, top_section_header_length, top_section_length, kHapSectionMultipleImages);
+
+        *outputBufferBytesUsed = top_section_length + top_section_header_length;
+
+        return HapResult_No_Error;
+    }
 }
 
 static void hap_decode_chunk(HapChunkDecodeInfo chunks[], unsigned int index)
@@ -473,48 +596,24 @@ static void hap_decode_chunk(HapChunkDecodeInfo chunks[], unsigned int index)
     }
 }
 
-unsigned int HapDecode(const void *inputBuffer, unsigned long inputBufferBytes,
-                       HapDecodeCallback callback, void *info,
-                       void *outputBuffer, unsigned long outputBufferBytes,
-                       unsigned long *outputBufferBytesUsed,
-                       unsigned int *outputBufferTextureFormat)
+unsigned int hap_decode_single_texture(const void *texture_section, uint32_t texture_section_length,
+                                       unsigned int texture_section_type,
+                                       HapDecodeCallback callback, void *info,
+                                       void *outputBuffer, unsigned long outputBufferBytes,
+                                       unsigned long *outputBufferBytesUsed,
+                                       unsigned int *outputBufferTextureFormat)
 {
     int result = HapResult_No_Error;
-    uint32_t sectionHeaderLength;
-    uint32_t sectionLength;
-    unsigned int sectionType;
     unsigned int textureFormat;
     unsigned int compressor;
-    const void *sectionStart;
     size_t bytesUsed = 0;
 
     /*
-     Check arguments
-     */
-    if (inputBuffer == NULL
-        || callback == NULL
-        || outputBuffer == NULL
-        || outputBufferTextureFormat == NULL
-        )
-    {
-        return HapResult_Bad_Arguments;
-    }
-
-    /*
      One top-level section type describes texture-format and second-stage compression
-     */
-    result = hap_read_section_header(inputBuffer, (uint32_t)inputBufferBytes, &sectionHeaderLength, &sectionLength, &sectionType);
-
-    if (result != HapResult_No_Error)
-    {
-        return result;
-    }
-    
-    /*
      Hap compressor/format constants can be unpacked by reading the top and bottom four bits.
      */
-    compressor = hap_top_4_bits(sectionType);
-    textureFormat = hap_bottom_4_bits(sectionType);
+    compressor = hap_top_4_bits(texture_section_type);
+    textureFormat = hap_bottom_4_bits(texture_section_type);
 
     /*
      Pass the texture format out
@@ -525,14 +624,15 @@ unsigned int HapDecode(const void *inputBuffer, unsigned long inputBufferBytes,
         return HapResult_Bad_Frame;
     }
 
-    sectionStart = ((uint8_t *)inputBuffer) + sectionHeaderLength;
-    
     if (compressor == kHapCompressorComplex)
     {
         /*
          The top-level section should contain a Decode Instructions Container followed by frame data
          */
-
+        const void *section_start;
+        uint32_t section_header_length;
+        uint32_t section_length;
+        unsigned int section_type;
         const char *frame_data = NULL;
         size_t bytes_remaining = 0;
 
@@ -541,9 +641,9 @@ unsigned int HapDecode(const void *inputBuffer, unsigned long inputBufferBytes,
         const void *chunk_sizes = NULL;
         const void *chunk_offsets = NULL;
 
-        result = hap_read_section_header(sectionStart, inputBufferBytes - sectionHeaderLength, &sectionHeaderLength, &sectionLength, &sectionType);
+        result = hap_read_section_header(texture_section, texture_section_length, &section_header_length, &section_length, &section_type);
 
-        if (result == HapResult_No_Error && sectionType != kHapSectionDecodeInstructionsContainer)
+        if (result == HapResult_No_Error && section_type != kHapSectionDecodeInstructionsContainer)
         {
             result = HapResult_Bad_Frame;
         }
@@ -556,34 +656,34 @@ unsigned int HapDecode(const void *inputBuffer, unsigned long inputBufferBytes,
         /*
          Frame data follows immediately after the Decode Instructions Container
          */
-        frame_data = ((const char *)sectionStart) + sectionHeaderLength + sectionLength;
+        frame_data = ((const char *)texture_section) + section_header_length + section_length;
 
         /*
          Step through the sections inside the Decode Instructions Container
          */
-        sectionStart = ((uint8_t *)sectionStart) + sectionHeaderLength;
-        bytes_remaining = sectionLength;
+        section_start = ((uint8_t *)texture_section) + section_header_length;
+        bytes_remaining = section_length;
 
         while (bytes_remaining > 0) {
             unsigned int section_chunk_count = 0;
-            result = hap_read_section_header(sectionStart, bytes_remaining, &sectionHeaderLength, &sectionLength, &sectionType);
+            result = hap_read_section_header(section_start, bytes_remaining, &section_header_length, &section_length, &section_type);
             if (result != HapResult_No_Error)
             {
                 return result;
             }
-            sectionStart = ((uint8_t *)sectionStart) + sectionHeaderLength;
-            switch (sectionType) {
+            section_start = ((uint8_t *)section_start) + section_header_length;
+            switch (section_type) {
                 case kHapSectionChunkSecondStageCompressorTable:
-                    compressors = sectionStart;
-                    section_chunk_count = sectionLength;
+                    compressors = section_start;
+                    section_chunk_count = section_length;
                     break;
                 case kHapSectionChunkSizeTable:
-                    chunk_sizes = sectionStart;
-                    section_chunk_count = sectionLength / 4;
+                    chunk_sizes = section_start;
+                    section_chunk_count = section_length / 4;
                     break;
                 case kHapSectionChunkOffsetTable:
-                    chunk_offsets = sectionStart;
-                    section_chunk_count = sectionLength / 4;
+                    chunk_offsets = section_start;
+                    section_chunk_count = section_length / 4;
                     break;
                 default:
                     // Ignore unrecognized sections
@@ -602,8 +702,8 @@ unsigned int HapDecode(const void *inputBuffer, unsigned long inputBufferBytes,
                 chunk_count = section_chunk_count;
             }
 
-            sectionStart = ((uint8_t *)sectionStart) + sectionLength;
-            bytes_remaining -= sectionHeaderLength + sectionLength;
+            section_start = ((uint8_t *)section_start) + section_length;
+            bytes_remaining -= section_header_length + section_length;
         }
 
         /*
@@ -724,9 +824,9 @@ unsigned int HapDecode(const void *inputBuffer, unsigned long inputBufferBytes,
     else if (compressor == kHapCompressorSnappy)
     {
         /*
-         Only one section is present containing a single block of snappy-compressed S3 data
+         Only one section is present containing a single block of snappy-compressed texture data
          */
-        snappy_status snappy_result = snappy_uncompressed_length((const char *)sectionStart, sectionLength, &bytesUsed);
+        snappy_status snappy_result = snappy_uncompressed_length((const char *)texture_section, texture_section_length, &bytesUsed);
         if (snappy_result != SNAPPY_OK)
         {
             return HapResult_Internal_Error;
@@ -735,7 +835,7 @@ unsigned int HapDecode(const void *inputBuffer, unsigned long inputBufferBytes,
         {
             return HapResult_Buffer_Too_Small;
         }
-        snappy_result = snappy_uncompress((const char *)sectionStart, sectionLength, (char *)outputBuffer, &bytesUsed);
+        snappy_result = snappy_uncompress((const char *)texture_section, texture_section_length, (char *)outputBuffer, &bytesUsed);
         if (snappy_result != SNAPPY_OK)
         {
             return HapResult_Internal_Error;
@@ -744,14 +844,14 @@ unsigned int HapDecode(const void *inputBuffer, unsigned long inputBufferBytes,
     else if (compressor == kHapCompressorNone)
     {
         /*
-         Only one section is present containing a single block of uncompressed S3 data
+         Only one section is present containing a single block of uncompressed texture data
          */
-        bytesUsed = sectionLength;
-        if (sectionLength > outputBufferBytes)
+        bytesUsed = texture_section_length;
+        if (texture_section_length > outputBufferBytes)
         {
             return HapResult_Buffer_Too_Small;
         }
-        memcpy(outputBuffer, sectionStart, sectionLength);
+        memcpy(outputBuffer, texture_section, texture_section_length);
     }
     else
     {
@@ -768,31 +868,191 @@ unsigned int HapDecode(const void *inputBuffer, unsigned long inputBufferBytes,
     return HapResult_No_Error;
 }
 
-unsigned int HapGetFrameTextureFormat(const void *inputBuffer, unsigned long inputBufferBytes, unsigned int *outputBufferTextureFormat)
+int hap_get_section_at_index(const void *input_buffer, uint32_t input_buffer_bytes,
+                             unsigned int index,
+                             const void **section, uint32_t *section_length, unsigned int *section_type)
 {
-    unsigned int result = HapResult_No_Error;
-    uint32_t sectionHeaderLength;
-    uint32_t sectionLength;
-    unsigned int sectionType;
+    int result;
+    uint32_t section_header_length;
+
+    result = hap_read_section_header(input_buffer, input_buffer_bytes, &section_header_length, section_length, section_type);
+
+    if (result != HapResult_No_Error)
+    {
+        return result;
+    }
+
+    if (*section_type == kHapSectionMultipleImages)
+    {
+        /*
+         Step through until we find the section at index
+         */
+        size_t offset = 0;
+        size_t top_section_length = *section_length;
+        input_buffer = ((uint8_t *)input_buffer) + section_header_length;
+        section_header_length = 0;
+        *section_length = 0;
+        for (int i = 0; i <= index; i++) {
+            offset += section_header_length + *section_length;
+            if (offset >= top_section_length)
+            {
+                return HapResult_Bad_Arguments;
+            }
+            result = hap_read_section_header(((uint8_t *)input_buffer) + offset,
+                                             top_section_length - offset,
+                                             &section_header_length,
+                                             section_length,
+                                             section_type);
+            if (result != HapResult_No_Error)
+            {
+                return result;
+            }
+        }
+        offset += section_header_length;
+        *section = ((uint8_t *)input_buffer) + offset;
+        return HapResult_No_Error;
+    }
+    else if (index == 0)
+    {
+        /*
+         A single-texture frame with the texture as the top section.
+         */
+        *section = ((uint8_t *)input_buffer) + section_header_length;
+        return HapResult_No_Error;
+    }
+    else
+    {
+        *section = NULL;
+        *section_length = 0;
+        *section_type = 0;
+        return HapResult_Bad_Arguments;
+    }
+}
+
+unsigned int HapDecode(const void *inputBuffer, unsigned long inputBufferBytes,
+                       unsigned int index,
+                       HapDecodeCallback callback, void *info,
+                       void *outputBuffer, unsigned long outputBufferBytes,
+                       unsigned long *outputBufferBytesUsed,
+                       unsigned int *outputBufferTextureFormat)
+{
+    int result = HapResult_No_Error;
+    const void *section;
+    uint32_t section_length;
+    unsigned int section_type;
+
     /*
      Check arguments
      */
     if (inputBuffer == NULL
+        || index > 1
+        || callback == NULL
+        || outputBuffer == NULL
+        || outputBufferTextureFormat == NULL
+        )
+    {
+        return HapResult_Bad_Arguments;
+    }
+
+    /*
+     Locate the section at the given index, which will either be the top-level section in a single texture image, or one of the
+     sections inside a multi-image top-level section.
+     */
+    result = hap_get_section_at_index(inputBuffer, inputBufferBytes, index, &section, &section_length, &section_type);
+
+    if (result == HapResult_No_Error)
+    {
+        /*
+         Decode the located texture
+         */
+        result = hap_decode_single_texture(section,
+                                           section_length,
+                                           section_type,
+                                           callback, info,
+                                           outputBuffer,
+                                           outputBufferBytes,
+                                           outputBufferBytesUsed,
+                                           outputBufferTextureFormat);
+    }
+
+    return result;
+}
+
+unsigned int HapGetFrameTextureCount(const void *inputBuffer, unsigned long inputBufferBytes, unsigned int *outputTextureCount)
+{
+    int result;
+    uint32_t section_header_length;
+    uint32_t section_length;
+    unsigned int section_type;
+
+    result = hap_read_section_header(inputBuffer, inputBufferBytes, &section_header_length, &section_length, &section_type);
+
+    if (result != HapResult_No_Error)
+    {
+        return result;
+    }
+
+    if (section_type == kHapSectionMultipleImages)
+    {
+        /*
+         Step through, counting sections
+         */
+        uint32_t offset = section_header_length;
+        uint32_t top_section_length = section_length;
+        *outputTextureCount = 0;
+        while (offset < top_section_length) {
+            result = hap_read_section_header(((uint8_t *)inputBuffer) + offset,
+                                             inputBufferBytes - offset,
+                                             &section_header_length,
+                                             &section_length,
+                                             &section_type);
+            if (result != HapResult_No_Error)
+            {
+                return result;
+            }
+            offset += section_header_length + section_length;
+            *outputTextureCount += 1;
+        }
+        return HapResult_No_Error;
+    }
+    else
+    {
+        /*
+         A single-texture frame with the texture as the top section.
+         */
+        *outputTextureCount = 1;
+        return HapResult_No_Error;
+    }
+}
+
+unsigned int HapGetFrameTextureFormat(const void *inputBuffer, unsigned long inputBufferBytes, unsigned int index, unsigned int *outputBufferTextureFormat)
+{
+    unsigned int result = HapResult_No_Error;
+    const void *section;
+    uint32_t section_length;
+    unsigned int section_type;
+    /*
+     Check arguments
+     */
+    if (inputBuffer == NULL
+        || index > 1
         || outputBufferTextureFormat == NULL
         )
     {
         return HapResult_Bad_Arguments;
     }
     /*
-    Read the frame's top-level section
+     Locate the section at the given index, which will either be the top-level section in a single texture image, or one of the
+     sections inside a multi-image top-level section.
      */
-    result = hap_read_section_header(inputBuffer, (uint32_t)inputBufferBytes, &sectionHeaderLength, &sectionLength, &sectionType);
+    result = hap_get_section_at_index(inputBuffer, inputBufferBytes, index, &section, &section_length, &section_type);
+
     if (result == HapResult_No_Error)
     {
         /*
          Pass the API enum value to match the constant out
          */
-        *outputBufferTextureFormat = hap_texture_format_constant_for_format_identifier(hap_bottom_4_bits(sectionType));
+        *outputBufferTextureFormat = hap_texture_format_constant_for_format_identifier(hap_bottom_4_bits(section_type));
         /*
          Check a valid format was present
          */
