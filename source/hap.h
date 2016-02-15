@@ -80,7 +80,6 @@ unsigned long HapMaxEncodedLength(unsigned int count,
 
  Permitted multiple-texture combinations are:
   HapTextureFormat_YCoCg_DXT5 + HapTextureFormat_A_RGTC1
-  HapTextureFormat_YCoCg_DXT5 + HapTextureFormat_A_8
 
  Use HapMaxEncodedLength() to discover the minimal value for outputBufferBytes.
  count is the number of textures (1 or 2)
