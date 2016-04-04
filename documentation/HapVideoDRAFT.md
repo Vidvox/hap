@@ -120,6 +120,19 @@ The section data is a series of four-byte fields being unsigned integers stored 
 
 The section data is a series of four-byte fields being unsigned integers stored in little-endian byte order, indicating the offset in bytes of each chunk from the start of the frame data. 
 
+##Names and Identifiers
+
+Where Hap frames are present in a stream or container and identifiers are required, the following usage is recommended:
+
+|Texture Format(s)                       |Human-Readable Name |Four-Character Code |
+|----------------------------------------|--------------------|--------------------|
+|RGB DXT1/BC1                            |Hap                 |Hap1                |
+|RGBA DXT5/BC3                           |Hap Alpha           |Hap5                |
+|Scaled YCoCg DXT5/BC3                   |Hap Q               |HapY                |
+|Scaled YCoCg DXT5/BC3 + Alpha RGTC1/BC4 |Hap Q Alpha         |HapM                |
+|Alpha RGTC1/BC4                         |Hap Alpha-Only      |HapA                |
+
+
 [1]: http://www.opengl.org/registry/specs/EXT/texture_compression_s3tc.txt
 [2]: http://snappy.googlecode.com/svn/trunk/format_description.txt
 [3]: http://developer.download.nvidia.com/whitepapers/2007/Real-Time-YCoCg-DXT-Compression/Real-Time%20YCoCg-DXT%20Compression.pdf
