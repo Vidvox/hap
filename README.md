@@ -53,7 +53,7 @@ Since images encoded with S3TC are still extremely large, Hap uses an additional
 Apps With Support For Hap
 ----
 
-The following applications and environments have support for GPU-accelerated playback of Hap movies:
+The following applications, environments and hardware have support for GPU-accelerated playback of Hap movies:
 
 - [VDMX](http://www.vidvox.net)
 - [CoGe](http://cogevj.hu)
@@ -70,6 +70,7 @@ The following applications and environments have support for GPU-accelerated pla
 - [Modulo Player](http://modulo-pi.com/en/)
 - [AVF Batch Converter](https://github.com/Vidvox/hap-in-avfoundation/releases)
 - [Dataton Watchout](http://www.dataton.com/watchout)
+- [Smode](http://smode.fr)
 - Cinder via [Cinder-Hap](http://github.com/rsodre/Cinder-Hap)
 - Max via [jit.gl.hap](http://cycling74.com/toolbox/jit-gl-hap/)
 - OpenFrameworks via [ofxHapPlayer](http://github.com/bangnoise/ofxHapPlayer)
