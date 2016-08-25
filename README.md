@@ -9,18 +9,12 @@ When supported natively by a host application, Hap has a number of distinct adva
 - Support for an optional alpha channel
 - Reduced data through-put to graphics hardware
 
-There are three different Hap codecs: **Hap**, **Hap Alpha**, and **Hap Q**.
+There are four different Hap codecs: **Hap**, **Hap Alpha**, **Hap Q** and **Hap Q Alpha**.
 
 - **Hap** has the lowest data-rate and reasonable image quality.
 - **Hap Alpha** has similar image quality to Hap, and supports an Alpha channel.
 - **Hap Q** has improved image quality, at the expense of larger file sizes.
-
-
-To add Hap support in your application, there are currently three possible routes:
-
-- A [Hap AVFoundation framework](http://github.com/Vidvox/hap-in-avfoundation) demonstrates encoding and decoding of Hap video on Mac OS X through AVFoundation.
-- A [Hap QuickTime codec](http://github.com/vidvox/hap-qt-codec/) allows encoding and non-accelerated playback of Hap video in any application on Mac OS X and Windows, and assists accelerated playback in applications which support it.
-- A [DirectShow codec](http://www.renderheads.com/portfolio/HapDirectShow/) is also available.
+- **Hap Q Alpha** has improved image quality and an Alpha channel, at the expense of larger file sizes.
 
 Hap has some characteristics which you should consider before using it:
 
@@ -77,10 +71,21 @@ The following applications, environments and hardware have support for GPU-accel
 - Unity via [AV PRO QUICKTIME](http://www.renderheads.com/portfolio/UnityAVProQuickTime/)
 - Quartz Composer via [CoGeHapPlayer](https://github.com/lov/CoGeHapPlayer)
 
+The following applications can play (and/or encode) Hap movies with varying or no GPU-accelaration:
+
+- [FFMPEG](https://ffmpeg.org)
+- [MPlayer](http://www.mplayerhq.hu)
+- [SMPlayer](http://smplayer.sourceforge.net/)
+
 Developers: Supporting Hap In Your Applications
 ----
 
-The simplest way to add Hap support to your application is to use QuickTime with the Hap QuickTime codec installed, making a custom request to receive S3TC frames which you then process with OpenGL or DirectX. Discussion and sample code is available in the [Hap QuickTime Playback Demo](https://github.com/vidvox/hap-quicktime-playback-demo).
+To add Hap support in your application, there are a number possible routes:
+
+- On OS X, the [Hap AVFoundation framework](http://github.com/Vidvox/hap-in-avfoundation) enables encoding and decoding of Hap video on Mac OS X through AVFoundation.
+- For 32-bit applications on OS X and Windows, the [Hap QuickTime codec](http://github.com/vidvox/hap-qt-codec/) allows encoding and non-accelerated playback of Hap video in any application, and assists accelerated playback in applications which support it. Discussion and sample code is available in the [Hap QuickTime Playback Demo](https://github.com/vidvox/hap-quicktime-playback-demo).
+- A [DirectShow codec](http://www.renderheads.com/portfolio/HapDirectShow/) is also available.
+- Use any demuxer (eg libavformat from FFMPEG) to parse encoded frames from a file and then use the source code from this project to decode the Hap frames to their compressed-texture formats to pass to OpenGL or DirectX.
 
 If you need to parse raw Hap frames yourself, source code and a specification document are available as part of this project.
 
