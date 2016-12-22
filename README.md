@@ -57,6 +57,7 @@ The following applications, environments and hardware have support for GPU-accel
 - [d3 Media Servers](http://www.d3technologies.com/)
 - [modul8](http://www.garagecube.com/)
 - [MadMapper](http://www.madmapper.com/)
+- [GrandVJ](http://vj-dj.arkaos.net/grandvj/about)
 - [Isadora](http://troikatronix.com)
 - [MixEmergency](http://www.inklen.com/mixemergency/)
 - [VPT 7](http://hcgilje.wordpress.com/vpt/)
