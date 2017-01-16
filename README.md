@@ -49,7 +49,6 @@ Apps With Support For Hap
 
 The following applications, environments and hardware have support for GPU-accelerated playback of Hap movies:
 
-- [AVF Batch Converter](https://github.com/Vidvox/hap-in-avfoundation/releases)
 - [Blendy VJ](http://www.blendyvj.com/)
 - [CoGe](http://cogevj.hu)
 - [d3 Media Servers](http://www.d3technologies.com/)
@@ -75,9 +74,11 @@ The following applications, environments and hardware have support for GPU-accel
 - OpenFrameworks via [ofxHapPlayer](http://github.com/bangnoise/ofxHapPlayer)
 - Quartz Composer via [CoGeHapPlayer](https://github.com/lov/CoGeHapPlayer)
 - Unity via [AV PRO QUICKTIME](http://www.renderheads.com/portfolio/UnityAVProQuickTime/)
+- [VUO](http://vuo.org/)
 
 The following applications can play (and/or encode) Hap movies with varying or no GPU-accelaration:
 
+- [AVF Batch Converter](https://github.com/Vidvox/hap-in-avfoundation/releases)
 - [FFMPEG](https://ffmpeg.org)
 - [MPlayer](http://www.mplayerhq.hu)
 - [SMPlayer](http://smplayer.sourceforge.net/)
