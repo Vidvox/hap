@@ -64,6 +64,7 @@ The following applications, environments and hardware have support for GPU-accel
 - [modul8](http://www.garagecube.com/)
 - [Modulo Player](http://modulo-pi.com/en/)
 - [Painting With Light](http://www.bigfug.com/software/painting-with-light/)
+- [Remixvideo](http://mixvibes.com/remixvideo)
 - [Smode](http://smode.fr)
 - [TouchDesigner](http://www.derivative.ca)
 - [VDMX](http://www.vidvox.net)
