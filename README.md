@@ -75,7 +75,9 @@ The following applications, environments and hardware have support for GPU-accel
 - OpenFrameworks via [ofxHapPlayer](http://github.com/bangnoise/ofxHapPlayer)
 - Quartz Composer via [CoGeHapPlayer](https://github.com/lov/CoGeHapPlayer)
 - Unity via [AVPro Video](https://www.assetstore.unity3d.com/en/#!/content/56355) and [Demolition Media Hap](https://www.assetstore.unity3d.com/en/#!/content/78908)
+- [vvvv](https://vvvv.org/) via [Demolition Media Hap](https://vvvv.org/contribution/demolition-media-hap-player)
 - [Vuo](http://vuo.org/)
+
 
 The following applications can play (and/or encode) Hap movies with varying or no GPU-accelaration:
 
