@@ -305,12 +305,22 @@ unsigned long HapMaxEncodedLength(unsigned int count,
     // Start with the length of a multiple-image section header
     unsigned long total_length = 8;
 
-    if (count == 0 || count > 2)
+    // Return 0 for bad arguments
+    if (count == 0 || count > 2
+        || inputBytes == NULL
+        || textureFormats == NULL
+        || chunkCounts == NULL)
     {
-        return HapResult_Bad_Arguments;
+        return 0;
     }
 
-    for (int i = 0; i < count; i++) {
+    for (int i = 0; i < count; i++)
+    {
+        if (chunkCounts[i] == 0)
+        {
+            return 0;
+        }
+
         // Assume snappy, the worst case
         total_length += hap_max_encoded_length(inputBytes[i], textureFormats[i], HapCompressorSnappy, chunkCounts[i]);
     }
@@ -489,6 +499,14 @@ unsigned int HapEncode(unsigned int count,
         || outputBufferBytesUsed == NULL)
     {
         return HapResult_Bad_Arguments;
+    }
+
+    for (int i = 0; i < count; i++)
+    {
+        if (chunkCounts[i] == 0)
+        {
+            return HapResult_Bad_Arguments;
+        }
     }
 
     if (count == 1)

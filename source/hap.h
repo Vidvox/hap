@@ -64,11 +64,11 @@ typedef void (*HapDecodeWorkFunction)(void *p, unsigned int index);
 typedef void (*HapDecodeCallback)(HapDecodeWorkFunction function, void *p, unsigned int count, void *info);
 
 /*
- Returns the maximum size of an output buffer for a frame composed of multiple textures.
- count is the number of textures
+ Returns the maximum size of an output buffer for a frame composed of one or more textures, or returns 0 on error.
+ count is the number of textures (1 or 2) and matches the number of values in the array arguments
  lengths is an array of input texture lengths in bytes
  textureFormats is an array of HapTextureFormats
- chunkCounts is an array of chunk counts
+ chunkCounts is an array of chunk counts (1 or more)
  */
 unsigned long HapMaxEncodedLength(unsigned int count,
                                   unsigned long *lengths,
@@ -82,12 +82,12 @@ unsigned long HapMaxEncodedLength(unsigned int count,
   HapTextureFormat_YCoCg_DXT5 + HapTextureFormat_A_RGTC1
 
  Use HapMaxEncodedLength() to discover the minimal value for outputBufferBytes.
- count is the number of textures (1 or 2)
+ count is the number of textures (1 or 2) and matches the number of values in the array arguments
  inputBuffers is an array of count pointers to texture data
  inputBufferBytes is an array of texture data lengths in bytes
  textureFormats is an array of HapTextureFormats
  compressors is an array of HapCompressors
- chunkCounts is an array of chunk counts to permit multithreaded decoding
+ chunkCounts is an array of chunk counts to permit multithreaded decoding (1 or more)
  outputBuffer is the destination buffer to receive the encoded frame
  outputBufferBytes is the destination buffer's length in bytes
  outputBufferBytesUsed will be set to the actual encoded length of the frame on return
