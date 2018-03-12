@@ -78,6 +78,7 @@ The following applications, environments and hardware have support for GPU-accel
 - Unity via [AVPro Video](https://www.assetstore.unity3d.com/en/#!/content/56355) and [Demolition Media Hap](https://www.assetstore.unity3d.com/en/#!/content/78908)
 - [vvvv](https://vvvv.org/) via [Demolition Media Hap](https://vvvv.org/contribution/demolition-media-hap-player)
 - [Vuo](http://vuo.org/)
+- [Videosync](http://videosync.info/)
 
 
 The following applications can play (and/or encode) Hap movies with varying or no GPU-accelaration:
