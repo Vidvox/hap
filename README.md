@@ -51,6 +51,7 @@ The following applications, environments and hardware have support for GPU-accel
 
 - [Blendy VJ](http://www.blendyvj.com/)
 - [CoGe](http://cogevj.hu)
+- [Christie / Coolux Pandoras Box](http://http://www.coolux.de)
 - [d3 Media Servers](http://www.d3technologies.com/)
 - [Dataton Watchout](http://www.dataton.com/watchout)
 - [Fugio](http://www.bigfug.com/software/fugio/)
