@@ -65,7 +65,7 @@ The following applications, environments and hardware have support for GPU-accel
 - [Mitti](http://imimot.com/mitti/)
 - [MixEmergency](http://www.inklen.com/mixemergency/)
 - [modul8](http://www.garagecube.com/)
-- [Modulo Player](http://modulo-pi.com/en/) and [Module Kinetic](http://www.modulo-pi.com/products/modulo-kinetic/)
+- [Modulo Player](http://modulo-pi.com/en/) and [Modulo Kinetic](http://www.modulo-pi.com/products/modulo-kinetic/)
 - OpenFrameworks via [ofxHapPlayer](http://github.com/bangnoise/ofxHapPlayer)
 - [Painting With Light](http://www.bigfug.com/software/painting-with-light/)
 - Quartz Composer via [CoGeHapPlayer](https://github.com/lov/CoGeHapPlayer)
