@@ -82,11 +82,11 @@ The following applications, environments and hardware have support for GPU-accel
 
 The following applications can play (and/or encode) Hap movies with varying or no GPU-accelaration:
 
+- [AfterCodecs](https://aescripts.com/aftercodecs/)
 - [AVF Batch Converter](https://github.com/Vidvox/hap-in-avfoundation/releases)
 - [FFMPEG](https://ffmpeg.org)
 - [MPlayer](http://www.mplayerhq.hu)
 - [SMPlayer](http://smplayer.sourceforge.net/)
-- [AfterCodecs](https://aescripts.com/aftercodecs/)
 
 Developers: Supporting Hap In Your Applications
 ----
