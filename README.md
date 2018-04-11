@@ -86,6 +86,7 @@ The following applications can play (and/or encode) Hap movies with varying or n
 - [FFMPEG](https://ffmpeg.org)
 - [MPlayer](http://www.mplayerhq.hu)
 - [SMPlayer](http://smplayer.sourceforge.net/)
+- [AfterCodecs](https://aescripts.com/aftercodecs/)
 
 Developers: Supporting Hap In Your Applications
 ----
