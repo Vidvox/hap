@@ -71,6 +71,7 @@ The following applications, environments and hardware have support for GPU-accel
 - Quartz Composer via [CoGeHapPlayer](https://github.com/lov/CoGeHapPlayer)
 - [Remixvideo](http://mixvibes.com/remixvideo)
 - [Smode](http://smode.fr)
+- [Splash](https://gitlab.com/sat-metalab/splash/wikis/home)
 - [TouchDesigner](http://www.derivative.ca)
 - Unity via [AVPro Video](https://www.assetstore.unity3d.com/en/#!/content/56355) and [Demolition Media Hap](https://www.assetstore.unity3d.com/en/#!/content/78908)
 - [VDMX](http://www.vidvox.net)
