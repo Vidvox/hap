@@ -68,6 +68,7 @@ The following applications, environments and hardware have support for GPU-accel
 - [modul8](http://www.garagecube.com/)
 - [Modulo Player](http://modulo-pi.com/en/) and [Modulo Kinetic](http://www.modulo-pi.com/products/modulo-kinetic/)
 - OpenFrameworks via [ofxHapPlayer](http://github.com/bangnoise/ofxHapPlayer) / [ofxDSHapVideoPlayer](https://github.com/secondstory/ofxDSHapVideoPlayer)
+- [Notch](https://www.notch.one/)
 - [Painting With Light](http://www.bigfug.com/software/painting-with-light/)
 - Quartz Composer via [CoGeHapPlayer](https://github.com/lov/CoGeHapPlayer)
 - [Remixvideo](http://mixvibes.com/remixvideo)
