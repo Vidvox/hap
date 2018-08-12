@@ -1,7 +1,7 @@
 HAP
 ====
 
-HAP is a family of video codecs which performs decompression using a computer's graphics hardware, substantially reducing the CPU usage necessary to play video — this is useful in situations where CPU power is a limiting factor, such as when working with multiple high resolution videos in real-time.
+HAP is a family of video codecs which perform decompression using a computer's graphics hardware, substantially reducing the CPU usage necessary to play video — this is useful in situations where CPU power is a limiting factor, such as when working with multiple high resolution videos in real-time.
 
 
 About HAP
