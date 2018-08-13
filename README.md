@@ -27,6 +27,9 @@ Developers of decoders may find the following packs of material useful for testi
  * [TouchDesigner](https://s3.amazonaws.com/vidvox/hap/Hap_Test_Derivative_TouchDesigner.zip): Samples encoded using Derivative TouchDesigner (1.5 GB zip)
  * [AVF Batch Converter](https://s3.amazonaws.com/vidvox/hap/Hap_Test_Vidvox_AVF_Batch_Converter.zip): Samples encoded using Vidvox AVF Batch Converter (35 MB zip)
  * [QuickTime Codec](https://s3.amazonaws.com/vidvox/hap/Hap_Test_Vidvox_QuickTime_Codec.zip): Samples encoded using the Vidvox QuickTime codec (20 MB zip)
+ * [DirectShow Codec](https://s3.amazonaws.com/vidvox/hap/Hap_Test_RenderHeads_DirectShow_Codec.zip): Samples encoded using the RenderHeads DirectShow codec (5 MB zip)
+
+ Vidvox also have [a selection of sample media](https://docs.vidvox.net/vdmx_sample_media.html#media-files).
 
 
 Open-Source
