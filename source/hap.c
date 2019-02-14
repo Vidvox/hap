@@ -1093,3 +1093,65 @@ unsigned int HapGetFrameTextureFormat(const void *inputBuffer, unsigned long inp
     }
     return result;
 }
+
+unsigned int HapGetFrameTextureChunkCount(const void *inputBuffer, unsigned long inputBufferBytes, unsigned int index, int *chunk_count)
+{
+    unsigned int result = HapResult_No_Error;
+    const void *section;
+    uint32_t section_length;
+    unsigned int section_type;
+    *chunk_count = 0;
+
+    /*
+     Check arguments
+     */
+    if (inputBuffer == NULL
+        || index > 1
+        )
+    {
+        return HapResult_Bad_Arguments;
+    }
+    /*
+     Locate the section at the given index, which will either be the top-level section in a single texture image, or one of the
+     sections inside a multi-image top-level section.
+     */
+    result = hap_get_section_at_index(inputBuffer, inputBufferBytes, index, &section, &section_length, &section_type);
+
+    if (result == HapResult_No_Error)
+    {
+        int result = HapResult_No_Error;
+        unsigned int compressor;
+
+        /*
+         One top-level section type describes texture-format and second-stage compression
+         Hap compressor/format constants can be unpacked by reading the top and bottom four bits.
+         */
+        compressor = hap_top_4_bits(section_type);
+
+        if (compressor == kHapCompressorComplex)
+        {
+            /*
+             The top-level section should contain a Decode Instructions Container followed by frame data
+             */
+            const void *compressors = NULL;
+            const void *chunk_sizes = NULL;
+            const void *chunk_offsets = NULL;
+            const char *frame_data = NULL;
+
+            result = hap_decode_header_complex_instructions(section, section_length, chunk_count, compressors, chunk_sizes, chunk_offsets, frame_data);
+
+            if (result != HapResult_No_Error)
+            {
+                return result;
+            }
+        }
+        else if ((compressor == kHapCompressorSnappy)||(compressor == kHapCompressorNone))
+        {
+            *chunk_count = 1;
+        }
+        else{
+            return HapResult_Bad_Frame;
+        }
+    }
+    return result;
+}

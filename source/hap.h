@@ -143,6 +143,11 @@ unsigned int HapGetFrameTextureCount(const void *inputBuffer, unsigned long inpu
  */
 unsigned int HapGetFrameTextureFormat(const void *inputBuffer, unsigned long inputBufferBytes, unsigned int index, unsigned int *outputBufferTextureFormat);
 
+/*
+ On return sets chunk_count to the chunk count value of the texture at index in the frame.
+*/
+unsigned int HapGetFrameTextureChunkCount(const void *inputBuffer, unsigned long inputBufferBytes, unsigned int index, int *chunk_count);
+
 #ifdef __cplusplus
 }
 #endif
