@@ -1119,7 +1119,6 @@ unsigned int HapGetFrameTextureChunkCount(const void *inputBuffer, unsigned long
 
     if (result == HapResult_No_Error)
     {
-        int result = HapResult_No_Error;
         unsigned int compressor;
 
         /*
