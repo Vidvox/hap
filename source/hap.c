@@ -1152,7 +1152,8 @@ unsigned int HapGetFrameTextureChunkCount(const void *inputBuffer, unsigned long
         {
             *chunk_count = 1;
         }
-        else{
+        else
+        {
             return HapResult_Bad_Frame;
         }
     }
