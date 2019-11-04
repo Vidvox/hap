@@ -131,6 +131,7 @@ Where Hap frames are present in a stream or container and identifiers are requir
 |Scaled YCoCg DXT5/BC3                   |Hap Q               |HapY                |
 |Scaled YCoCg DXT5/BC3 + Alpha RGTC1/BC4 |Hap Q Alpha         |HapM                |
 |Alpha RGTC1/BC4                         |Hap Alpha-Only      |HapA                |
+|RGBA BPTC/BC7 UNORM                     |                    |Hap7                |
 
 
 [1]: http://www.opengl.org/registry/specs/EXT/texture_compression_s3tc.txt
