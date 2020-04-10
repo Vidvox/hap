@@ -135,7 +135,7 @@ Where Hap frames are present in a stream or container and identifiers are requir
 
 
 [1]: http://www.opengl.org/registry/specs/EXT/texture_compression_s3tc.txt
-[2]: http://snappy.googlecode.com/svn/trunk/format_description.txt
+[2]: https://raw.githubusercontent.com/google/snappy/master/format_description.txt
 [3]: http://developer.download.nvidia.com/whitepapers/2007/Real-Time-YCoCg-DXT-Compression/Real-Time%20YCoCg-DXT%20Compression.pdf
 [4]: http://www.opengl.org/registry/specs/ARB/texture_compression_bptc.txt
 [5]: https://www.opengl.org/registry/specs/EXT/texture_compression_rgtc.txt
