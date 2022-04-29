@@ -24,6 +24,7 @@ The correct encoding and decoding of Hap frames depends on compression schemes d
 3. Scaled YCoCg DXT5 Texture Compression: described in [Real-Time YCoCg-DXT Compression][3], JMP van Waveren and Ignacio Castaño, September 2007
 4. BC7 Texture Compression: described in the [OpenGL BPTC Extension][4]
 5. RGTC/BC4 Texture Compression: described in the [OpenGL RGTC Extension][5]
+6. BC6U/BC6S Texture Compression: described in the [OpenGL BPTC Extension][4]
 
 ## Hap Frames
 
@@ -63,6 +64,12 @@ The following are the only section types permitted at the top level of a frame. 
 |0xA1                  |Alpha           |RGTC1/BC4          |None                        |
 |0xB1                  |Alpha           |RGTC1/BC4          |Snappy                      |
 |0xC1                  |Alpha           |RGTC1/BC4          |Consult decode instructions |
+|0xA2                  |RGB Unsigned Float|BC6U             |None                        |
+|0xB2                  |RGB Unsigned Float|BC6U             |Snappy                      |
+|0xC2                  |RGB Unsigned Float|BC6U             |Consult decode instructions |
+|0xA3                  |RGB Signed Float|BC6S               |None                        |
+|0xB3                  |RGB Signed Float|BC6S               |Snappy                      |
+|0xC3                  |RGB Signed Float|BC6S               |Consult decode instructions |
 |0x0D                  |Multiple images |Not Applicable     |Not Applicable              |
 
 #### Simple Top-Level Sections
@@ -132,6 +139,7 @@ Where Hap frames are present in a stream or container and identifiers are requir
 |Scaled YCoCg DXT5/BC3 + Alpha RGTC1/BC4 |Hap Q Alpha         |HapM                |
 |Alpha RGTC1/BC4                         |Hap Alpha-Only      |HapA                |
 |RGBA BPTC/BC7 UNORM                     |Hap R               |Hap7                |
+|RGB BPTC/BC6U and BC6S                  |Hap H               |HapH                |
 
 
 [1]: http://www.opengl.org/registry/specs/EXT/texture_compression_s3tc.txt
