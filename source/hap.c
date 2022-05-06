@@ -47,27 +47,35 @@
 #define kHapFormatYCoCgDXT5 0xF
 #define kHapFormatARGTC1 0x1
 #define kHapFormatRGBABPTC 0xC
+#define kHapFormatRGBBPTCUF 0x2
+#define kHapFormatRGBBPTCSF 0x3
 
 /*
  Packed byte values for Hap
  
- Format         Compressor      Byte Code
- ----------------------------------------
- RGB_DXT1           None            0xAB
- RGB_DXT1           Snappy          0xBB
- RGB_DXT1           Complex         0xCB
- RGBA_DXT5          None            0xAE
- RGBA_DXT5          Snappy          0xBE
- RGBA_DXT5          Complex         0xCE
- YCoCg_DXT5         None            0xAF
- YCoCg_DXT5         Snappy          0xBF
- YCoCg_DXT5         Complex         0xCF
- A_RGTC1            None            0xA1
- A_RGTC1            Snappy          0xB1
- A_RGTC1            Complex         0xC1
- RGBA_BPTC_UNORM    None            0xAC
- RGBA_BPTC_UNORM    Snappy          0xBC
- RGBA_BPTC_UNORM    Complex         0xCC
+ Format                     Compressor      Byte Code
+ ----------------------------------------------------
+ RGB_DXT1                   None            0xAB
+ RGB_DXT1                   Snappy          0xBB
+ RGB_DXT1                   Complex         0xCB
+ RGBA_DXT5                  None            0xAE
+ RGBA_DXT5                  Snappy          0xBE
+ RGBA_DXT5                  Complex         0xCE
+ YCoCg_DXT5                 None            0xAF
+ YCoCg_DXT5                 Snappy          0xBF
+ YCoCg_DXT5                 Complex         0xCF
+ A_RGTC1                    None            0xA1
+ A_RGTC1                    Snappy          0xB1
+ A_RGTC1                    Complex         0xC1
+ RGBA_BPTC_UNORM            None            0xAC
+ RGBA_BPTC_UNORM            Snappy          0xBC
+ RGBA_BPTC_UNORM            Complex         0xCC
+ RGB_BPTC_UNSIGNED_FLOAT    None            0xA2
+ RGB_BPTC_UNSIGNED_FLOAT    Snappy          0xB2
+ RGB_BPTC_UNSIGNED_FLOAT    Complex         0xC2
+ RGB_BPTC_SIGNED_FLOAT      None            0xA3
+ RGB_BPTC_SIGNED_FLOAT      Snappy          0xB3
+ RGB_BPTC_SIGNED_FLOAT      Complex         0xC3
  */
 
 /*
@@ -218,6 +226,10 @@ static unsigned int hap_texture_format_constant_for_format_identifier(unsigned i
             return HapTextureFormat_A_RGTC1;
         case kHapFormatRGBABPTC:
             return HapTextureFormat_RGBA_BPTC_UNORM;
+        case kHapFormatRGBBPTCUF:
+            return HapTextureFormat_RGB_BPTC_UNSIGNED_FLOAT;
+        case kHapFormatRGBBPTCSF:
+            return HapTextureFormat_RGB_BPTC_SIGNED_FLOAT;
         default:
             return 0;
             
@@ -239,6 +251,10 @@ static unsigned int hap_texture_format_identifier_for_format_constant(unsigned i
             return kHapFormatARGTC1;
         case HapTextureFormat_RGBA_BPTC_UNORM:
             return kHapFormatRGBABPTC;
+        case HapTextureFormat_RGB_BPTC_UNSIGNED_FLOAT:
+            return kHapFormatRGBBPTCUF;
+        case HapTextureFormat_RGB_BPTC_SIGNED_FLOAT:
+            return kHapFormatRGBBPTCSF;
         default:
             return 0;
     }
@@ -355,6 +371,8 @@ static unsigned int hap_encode_texture(const void *inputBuffer, unsigned long in
             && textureFormat != HapTextureFormat_YCoCg_DXT5
             && textureFormat != HapTextureFormat_A_RGTC1
             && textureFormat != HapTextureFormat_RGBA_BPTC_UNORM
+            && textureFormat != HapTextureFormat_RGB_BPTC_UNSIGNED_FLOAT
+            && textureFormat != HapTextureFormat_RGB_BPTC_SIGNED_FLOAT
             )
         || (compressor != HapCompressorNone
             && compressor != HapCompressorSnappy
