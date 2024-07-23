@@ -21,13 +21,13 @@ Test Materials
 
 Developers of decoders may find the following packs of material useful for testing:
 
- * [Odd Dimensions](https://s3.amazonaws.com/vidvox/hap/Hap_Test_Odd_Dimensions.zip): Samples with irregular dimensions (2 MB zip)
- * [16K](https://s3.amazonaws.com/vidvox/hap/Hap_Test_16K.zip): Samples at high resolution (35 MB zip)
- * [FFmpeg](https://s3.amazonaws.com/vidvox/hap/Hap_Test_FFmpeg.zip): Samples encoded using FFmpeg (24 MB zip)
- * [TouchDesigner](https://s3.amazonaws.com/vidvox/hap/Hap_Test_Derivative_TouchDesigner.zip): Samples encoded using Derivative TouchDesigner (1.5 GB zip)
- * [AVF Batch Converter](https://s3.amazonaws.com/vidvox/hap/Hap_Test_Vidvox_AVF_Batch_Converter.zip): Samples encoded using Vidvox AVF Batch Converter (35 MB zip)
- * [QuickTime Codec](https://s3.amazonaws.com/vidvox/hap/Hap_Test_Vidvox_QuickTime_Codec.zip): Samples encoded using the Vidvox QuickTime codec (20 MB zip)
- * [DirectShow Codec](https://s3.amazonaws.com/vidvox/hap/Hap_Test_RenderHeads_DirectShow_Codec.zip): Samples encoded using the RenderHeads DirectShow codec (5 MB zip)
+ * [Odd Dimensions](https://d3omao0uy1rjjh.cloudfront.net/hap/Hap_Test_Odd_Dimensions.zip): Samples with irregular dimensions (2 MB zip)
+ * [16K](https://d3omao0uy1rjjh.cloudfront.net/hap/Hap_Test_16K.zip): Samples at high resolution (35 MB zip)
+ * [FFmpeg](https://d3omao0uy1rjjh.cloudfront.net/hap/Hap_Test_FFmpeg.zip): Samples encoded using FFmpeg (24 MB zip)
+ * [TouchDesigner](https://d3omao0uy1rjjh.cloudfront.net/hap/Hap_Test_Derivative_TouchDesigner.zip): Samples encoded using Derivative TouchDesigner (1.5 GB zip)
+ * [AVF Batch Converter](https://d3omao0uy1rjjh.cloudfront.net/hap/Hap_Test_Vidvox_AVF_Batch_Converter.zip): Samples encoded using Vidvox AVF Batch Converter (35 MB zip)
+ * [QuickTime Codec](https://d3omao0uy1rjjh.cloudfront.net/hap/Hap_Test_Vidvox_QuickTime_Codec.zip): Samples encoded using the Vidvox QuickTime codec (20 MB zip)
+ * [DirectShow Codec](https://d3omao0uy1rjjh.cloudfront.net/hap/Hap_Test_RenderHeads_DirectShow_Codec.zip): Samples encoded using the RenderHeads DirectShow codec (5 MB zip)
 
  Vidvox also have [a selection of sample media](https://docs.vidvox.net/vdmx_sample_media.html#media-files).
 
